@@ -8,7 +8,7 @@ A site to help you plan your reading journey
 
 Simply clone this repo
 ```
-git clone https://github.com/nathanctay/nbook.git
+git clone https://github.com/nathanctay/booktracker.git
 ```
 and install the dependencies
 ```
