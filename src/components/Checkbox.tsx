@@ -1,6 +1,8 @@
-import React from 'react'
+interface CheckboxProps {
+    onChange: () => void
+}
 
-function Checkbox(onChange: () => {}) {
+function Checkbox({ onChange }: CheckboxProps) {
     return (
         <div className='flex justify-center items-center size-full'>
             <input type='checkbox' onChange={onChange} />
