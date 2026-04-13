@@ -45,7 +45,7 @@ function NavLayout() {
                 </ul>
 
             </div>
-            <div className="content flex-1 px-[24px] py-[48px]">
+            <div className="content overflow-auto flex-1 px-[24px] py-[48px]">
                 <Outlet />
             </div>
         </div>
