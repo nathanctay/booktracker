@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { cors } from 'hono/cors'
-import { getBookInfo, getBooks } from "./utils/books";
+import { getBookInfo, getBooks, getSeries } from "./utils/books";
 
 const app = new Hono()
 
@@ -11,6 +11,14 @@ app.use('/*', cors({ origin: 'http://localhost:5173' }))
 app.get('/book/:id', async (c) => {
     const bookId = parseInt(c.req.param('id'))
     const result = await getBookInfo(bookId)
+
+    return c.json(result)
+
+})
+
+app.get('/series/:id', async (c) => {
+    const bookId = parseInt(c.req.param('id'))
+    const result = await getSeries(bookId)
 
     return c.json(result)
 

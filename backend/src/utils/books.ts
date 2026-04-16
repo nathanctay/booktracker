@@ -3,8 +3,10 @@ export async function getBookInfo(bookId: number) {
     {
         books(where: {id: {_eq: ${bookId}}}) {
             book_series {
+                position
                 series{
                     books_count
+                    id
                     name
                 }
             }
@@ -26,7 +28,7 @@ export async function getBookInfo(bookId: number) {
     }
     `
     const result = await fetchHardcoverGraphQL(query)
-    return result
+    return result.books[0]
 }
 
 export async function getBooks(search: string, page = 1) {
@@ -46,6 +48,37 @@ export async function getBooks(search: string, page = 1) {
 
     const result = await fetchHardcoverGraphQL(query)
     return result
+}
+
+export async function getSeries(seriesId: number) {
+    const query = `
+    {
+        series(where: {id: {_eq: ${seriesId}}}) {
+            author {
+                name
+            }
+            book_series(order_by: {book: {activities_count: desc}, position: asc}) {
+                book {
+                    description
+                    headline
+                    image{
+                        url
+                    }
+                    pages
+                    release_year
+                    title
+                }
+                position
+            }
+            books_count
+            description
+            name
+            primary_books_count
+        }
+    }
+    `
+    const result = await fetchHardcoverGraphQL(query)
+    return result.series[0]
 }
 
 async function fetchHardcoverGraphQL(query: string) {
