@@ -1,8 +1,11 @@
 import { Hono } from "hono";
 import { cors } from 'hono/cors'
 import { getBookInfo, getBooks, getSeries } from "./utils/books";
+import 'dotenv/config';
+import { drizzle } from 'drizzle-orm/node-postgres';
 
 const app = new Hono()
+const db = drizzle(process.env.DATABASE_URL!);
 
 app.get('/', (c) => c.text("Hello World!"))
 
