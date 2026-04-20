@@ -50,7 +50,7 @@ function SearchPage() {
                                     <li onClick={() => console.log(book)}>
                                         <div className="flex border rounded-md pl-2 pr-4 py-2 gap-2">
                                             <div>
-                                                <img width={20} src={book.coverUrl} alt={`${book.title} cover`} />
+                                                <img loading="lazy" width={20} src={book.coverUrl} alt={`${book.title} cover`} />
                                             </div>
                                             <div className="flex-4">
                                                 <span className='font-bold'>{book.title}</span> <span className='text-sm'>{book.author && `by ${book.author}`}</span>
