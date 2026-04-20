@@ -1,3 +1,10 @@
+export class HardcoverError extends Error {
+    constructor(message: string) {
+        super(message)
+        this.name = 'HardcoverError'
+    }
+}
+
 export async function getBookInfo(bookId: number) {
     const query = `
     {
@@ -47,7 +54,20 @@ export async function getBooks(search: string, page = 1) {
   `
 
     const result = await fetchHardcoverGraphQL(query)
-    return result
+
+    const bookList = result.search.results.hits.map((book) => {
+        return {
+            id: book.document.id,
+            title: book.document.title,
+            pageCount: book.document.pages,
+            author: book.document.author_names.filter((author, index) => {
+                return (book.document.contribution_types[index] == 'Author')
+            }),
+            coverUrl: book.document.image.url
+        }
+    })
+
+    return bookList
 }
 
 export async function getSeries(seriesId: number) {
@@ -82,25 +102,24 @@ export async function getSeries(seriesId: number) {
 }
 
 async function fetchHardcoverGraphQL(query: string) {
-    try {
-        const response = await fetch('https://api.hardcover.app/v1/graphql', {
-            method: 'POST',
-            headers: {
-                'content-type': 'application/json',
-                'authorization': process.env.HARDCOVER_KEY!
-            },
-            body: JSON.stringify({ query: query })
-        })
+    const response = await fetch('https://api.hardcover.app/v1/graphql', {
+        method: 'POST',
+        headers: {
+            'content-type': 'application/json',
+            'authorization': process.env.HARDCOVER_KEY!
+        },
+        body: JSON.stringify({ query: query })
+    })
 
-        const result = await response.json()
-        if (result.errors) {
-            throw new Error(result.errors[0].message)
-        }
-        console.log(result)
-        return result.data
-    } catch (e) {
-        throw e
+    const result = await response.json()
+    if (result.error) {
+        throw new HardcoverError(result.error)
     }
+    if (result.errors) {
+        throw new HardcoverError(result.errors[0].message)
+    }
+    return result.data
+
 
 }
 
