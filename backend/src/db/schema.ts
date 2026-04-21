@@ -8,7 +8,7 @@ export const books = pgTable("books", {
     pageCount: integer("page_count").notNull(),
     author: text().notNull(),
     coverUrl: text("cover_url").notNull(),
-    progress: integer(),
+    progress: integer().default(0),
     complete: boolean().default(false),
     dateStarted: date("date_started"),
     dateFinished: date("date_finished"),

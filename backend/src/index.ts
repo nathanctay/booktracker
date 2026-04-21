@@ -4,6 +4,10 @@ import { getBookInfo, getBooks, getSeries, HardcoverError } from "./utils/books"
 import { bookInfoRoute } from './routes/bookInfo';
 import { seriesInfoRoute } from './routes/seriesInfo';
 import { bookSearchRoute } from './routes/bookSearch';
+import { addBookRoute, getBookRoute } from './routes/books';
+import { db } from './db';
+import { books } from './db/schema';
+import { eq } from 'drizzle-orm';
 
 
 const app = new OpenAPIHono({
@@ -39,9 +43,9 @@ app.openapi(bookInfoRoute, async (c) => {
 })
 
 app.openapi(seriesInfoRoute, async (c) => {
-    const { id: bookId } = c.req.valid('param')
+    const { id: seriesId } = c.req.valid('param')
     try {
-        const result = await getSeries(bookId)
+        const result = await getSeries(seriesId)
         return c.json(result)
     } catch (e) {
         if (e instanceof HardcoverError) {
@@ -66,29 +70,38 @@ app.openapi(bookSearchRoute, async (c) => {
 })
 
 
+app.openapi(addBookRoute, async (c) => {
+    const body = c.req.valid('json')
+    try {
+        const result = await db.insert(books).values({ ...body }).returning()
+        return c.json(result, 200)
+    } catch (e) {
+        return c.json({ error: 'Internal server error' }, 500)
+    }
+})
+
+app.openapi(getBookRoute, async (c) => {
+    const { id: bookId } = c.req.valid('param')
+    try {
+        const bookInfo = await db.query.books.findFirst({
+            where: eq(books.id, bookId),
+            with: {
+                listItems: {
+                    with: { list: true }
+                }
+            }
+        })
+        if (!bookInfo) {
+            return c.json({ error: 'Book not found' }, 404)
+        }
+        return c.json(bookInfo, 200)
+    } catch (e) {
+        return c.json({ error: 'Internal server error' }, 500)
+    }
+})
 // TODO
-// app.post('/addBook', async (c) => {
-//     const body = await c.req.json()
 
-//     const result = await db.insert(books).values({ ...body }).returning()
-//     return c.json(result)
-// })
 
-// app.get('/book/:id', async (c) => {
-//     const bookId = c.req.param('id');
-
-//     const bookInfo = await db.query.books.findFirst({
-//         where: eq(books.id, parseInt(bookId)),
-//         with: {
-//             listItems: {
-//                 with: { list: true }
-//             }
-//         }
-//     })
-
-//     console.log(bookInfo)
-//     return c.json(bookInfo)
-// })
 
 // app.post('/createList', async (c) => {
 //     const { name, description } = await c.req.json()

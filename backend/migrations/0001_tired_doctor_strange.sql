@@ -1,0 +1,1 @@
+ALTER TABLE "books" ALTER COLUMN "progress" SET DEFAULT 0;
