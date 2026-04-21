@@ -25,7 +25,11 @@ const app = new OpenAPIHono({
     }
 })
 
-app.use('/*', cors({ origin: 'http://localhost:5173' }))
+app.use('/*', cors({
+    origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
+    allowMethods: ['POST', 'GET', 'OPTIONS', 'DELETE', 'PATCH', 'PUT'],
+    allowHeaders: ['Content-Type']
+}))
 
 app.get('/', (c) => c.text("Hello World!"))
 
