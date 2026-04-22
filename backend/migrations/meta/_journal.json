@@ -15,6 +15,13 @@
       "when": 1776753327300,
       "tag": "0001_tired_doctor_strange",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1776817832251,
+      "tag": "0002_past_wallflower",
+      "breakpoints": true
     }
   ]
 }

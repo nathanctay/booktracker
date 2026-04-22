@@ -1,4 +1,4 @@
-import { OpenAPIHono } from '@hono/zod-openapi';
+import { OpenAPIHono, z } from '@hono/zod-openapi';
 import { cors } from 'hono/cors'
 import { getBookInfo, getBooks, getSeries, HardcoverError } from "./utils/books";
 import { bookInfoRoute } from './routes/bookInfo';
@@ -6,22 +6,26 @@ import { seriesInfoRoute } from './routes/seriesInfo';
 import { bookSearchRoute } from './routes/bookSearch';
 import { addBookRoute, getBookRoute } from './routes/books';
 import { db } from './db';
-import { books } from './db/schema';
+import { books, listItems, lists } from './db/schema';
 import { eq } from 'drizzle-orm';
+import { addListItemRoute, addListRoute, getListRoute } from './routes/lists';
 
 
 const app = new OpenAPIHono({
     defaultHook: (result, c) => {
         if (!result.success) {
-            let errorMessage = JSON.parse(result.error.message)[0].message
+            const { fieldErrors, formErrors } = result.error.flatten()
             return c.json(
                 {
                     code: 400,
-                    message: errorMessage,
+                    message: 'Validation failed',
+                    errors: fieldErrors,
+                    ...(formErrors.length > 0 && { formErrors }),
                 },
                 400
             )
         }
+
     }
 })
 
@@ -73,17 +77,6 @@ app.openapi(bookSearchRoute, async (c) => {
     }
 })
 
-
-app.openapi(addBookRoute, async (c) => {
-    const body = c.req.valid('json')
-    try {
-        const result = await db.insert(books).values({ ...body }).returning()
-        return c.json(result, 200)
-    } catch (e) {
-        return c.json({ error: 'Internal server error' }, 500)
-    }
-})
-
 app.openapi(getBookRoute, async (c) => {
     const { id: bookId } = c.req.valid('param')
     try {
@@ -103,39 +96,60 @@ app.openapi(getBookRoute, async (c) => {
         return c.json({ error: 'Internal server error' }, 500)
     }
 })
-// TODO
+
+app.openapi(addBookRoute, async (c) => {
+    const body = c.req.valid('json')
+    try {
+        const result = await db.insert(books).values({ ...body }).returning()
+        return c.json(result, 200)
+    } catch (e) {
+        return c.json({ error: 'Internal server error' }, 500)
+    }
+})
+
+app.openapi(getListRoute, async (c) => {
+    const { id: listId } = c.req.valid('param')
+    try {
+
+        const listInfo = await db.query.lists.findFirst({
+            where: eq(lists.id, listId),
+            with: {
+                listItems: {
+                    with: { book: true }
+                }
+            }
+        })
+
+        if (!listInfo) {
+            return c.json({ error: 'List not found' }, 404)
+        }
+        return c.json(listInfo, 200)
+    } catch (e) {
+        return c.json({ error: 'Internal server error' }, 500)
+    }
+})
+
+app.openapi(addListRoute, async (c) => {
+    const body = c.req.valid('json')
+    try {
+        const result = await db.insert(lists).values({ ...body }).returning()
+        return c.json(result, 200)
+    } catch (e) {
+        return c.json({ error: 'Internal server error' }, 500)
+    }
+})
+
+app.openapi(addListItemRoute, async (c) => {
+    const body = c.req.valid('json')
+
+    try {
+        const result = await db.insert(listItems).values({ ...body }).returning()
+        return c.json(result, 200)
+    } catch (e) {
+        return c.json({ error: 'Internal server error' }, 500)
+    }
+})
 
 
-
-// app.post('/createList', async (c) => {
-//     const { name, description } = await c.req.json()
-//     console.log(name, description)
-
-//     const result = await db.insert(lists).values({ name, description }).returning()
-//     return c.json(result)
-// })
-
-// app.post('/addBooksToList', async (c) => {
-//     const body = await c.req.json()
-
-//     const result = await db.insert(listItems).values({ ...body }).returning()
-//     return c.json(result)
-// })
-
-// app.get('/getList/:id', async (c) => {
-//     const listId = await c.req.param('id')
-
-//     const listInfo = await db.query.lists.findFirst({
-//         where: eq(lists.id, parseInt(listId)),
-//         with: {
-//             listItems: {
-//                 with: { book: true }
-//             }
-//         }
-//     })
-
-//     console.log(listInfo)
-//     return c.json(listInfo)
-// })
 
 export default app

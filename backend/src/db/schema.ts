@@ -28,9 +28,9 @@ export const lists = pgTable("lists", {
 
 export const listItems = pgTable("list_items", {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
-    bookId: integer().references(() => books.id, { onDelete: "cascade" }),
-    listId: integer().references(() => lists.id, { onDelete: "cascade" }),
-    position: integer(),
+    bookId: integer().references(() => books.id, { onDelete: "cascade" }).notNull(),
+    listId: integer().references(() => lists.id, { onDelete: "cascade" }).notNull(),
+    position: integer().notNull(),
     addedAt: timestamp({ withTimezone: true }).default(sql`now()`)
 }, (table) => [
     index("list_items_book_id_idx").on(table.bookId),

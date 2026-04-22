@@ -64,16 +64,6 @@ const AddBookParams = z.object({
         }),
 })
 
-
-// listItems: {
-//     list: {
-//         description: string | null;
-//         name: string;
-//         id: number;
-//         createdAt: Date | null;
-//     } | null;
-// } [];
-
 const GetBookSchema = z.object({
     title: z.string(),
     id: z.number(),

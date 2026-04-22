@@ -6,7 +6,7 @@ export const bookRelations = relations(books, ({ many }) => ({
 }))
 
 export const listsRelations = relations(lists, ({ many }) => ({
-    items: many(listItems)
+    listItems: many(listItems)
 }))
 
 export const listItemRelations = relations(listItems, ({ one }) => ({
