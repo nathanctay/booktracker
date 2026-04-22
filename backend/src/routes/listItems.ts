@@ -1,7 +1,7 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import { ErrorSchema, UpstreamErrorSchema } from "./schemas";
 
-const ListIdParams = z.object({
+const ListItemIdParams = z.object({
     id: z
         .coerce
         .number()
@@ -14,75 +14,81 @@ const ListIdParams = z.object({
         })
 })
 
-const CreateListDto = z.object({
-    name: z
-        .string()
+const CreateListItemDto = z.object({
+    bookId: z
+        .coerce
+        .number()
         .openapi({
-            example: "Books to read"
+            example: 1234,
         }),
-    description: z
-        .string()
-        .optional()
+    listId: z
+        .coerce
+        .number()
         .openapi({
-            example: "A list of books I want to read"
+            example: 1234,
+        }),
+    position: z
+        .coerce
+        .number()
+        .openapi({
+            example: 1,
         }),
 })
 
-const UpdateListDto = CreateListDto.partial()
+const UpdateListItemDto = CreateListItemDto.partial()
 
-const GetListSchema = z.object({
+const GetListItemSchema = z.object({
     id: z.number(),
-    name: z.string(),
-    description: z.string().nullable(),
-    createdAt: z.string().nullable(),
-    listItems: z.array(
-        z.object({
-            id: z.number(),
-            position: z.number().nullable(),
-            bookId: z.number().nullable(),
-            listId: z.number().nullable(),
-            addedAt: z.string().nullable(),
-            book:
-                z.object({
-                    title: z.string(),
-                    id: z.number(),
-                    author: z.string(),
-                    hardcoverId: z.number(),
-                    pageCount: z.number(),
-                    coverUrl: z.url(),
-                    progress: z.number().nullable(),
-                    complete: z.boolean().nullable(),
-                    dateStarted: z.string().nullable(),
-                    dateFinished: z.string().nullable(),
-                    lastRead: z.string().nullable(),
-                }).nullable()
-        })
-    )
+    bookId: z.number(),
+    listId: z.number(),
+    position: z.number(),
+    addedAt: z.string().nullable(),
+    book: z.object({
+        title: z.string(),
+        id: z.number(),
+        author: z.string(),
+        hardcoverId: z.number(),
+        pageCount: z.number(),
+        coverUrl: z.url(),
+        progress: z.number().nullable(),
+        complete: z.boolean().nullable(),
+        dateStarted: z.string().nullable(),
+        dateFinished: z.string().nullable(),
+        lastRead: z.string().nullable(),
+    }).nullable(),
+    list: z.object({
+        description: z.string().nullable(),
+        name: z.string(),
+        id: z.number(),
+        createdAt: z.string().nullable(),
+    }).nullable()
+
 })
 
-const ListRowSchema = z.array(
+const ListItemRowSchema = z.array(
     z.object({
         id: z.number(),
-        name: z.string(),
-        description: z.string().nullable(),
-        createdAt: z.string().nullable(),
+        bookId: z.number(),
+        listId: z.number(),
+        position: z.number(),
+        addedAt: z.string().nullable(),
     })
 )
 
-export const getListRoute = createRoute({
+export const getListItemRoute = createRoute({
     method: 'get',
-    path: '/list/{id}',
+    path: '/listitem/{id}',
     request: {
-        params: ListIdParams
+        params: ListItemIdParams,
     },
     responses: {
         200: {
             content: {
                 'application/json': {
-                    schema: GetListSchema,
+                    schema: GetListItemSchema,
                 },
             },
-            description: 'Retrieve list from database',
+            description: 'Get a list item',
         }, 400: {
             content: {
                 'application/json': {
@@ -108,14 +114,14 @@ export const getListRoute = createRoute({
     },
 })
 
-export const createListRoute = createRoute({
+export const createListItemRoute = createRoute({
     method: 'post',
-    path: '/list',
+    path: '/listitem',
     request: {
         body: {
             content: {
                 'application/json': {
-                    schema: CreateListDto
+                    schema: CreateListItemDto
                 }
             }
         }
@@ -124,10 +130,10 @@ export const createListRoute = createRoute({
         201: {
             content: {
                 'application/json': {
-                    schema: ListRowSchema,
+                    schema: ListItemRowSchema,
                 },
             },
-            description: 'Create a list in the database',
+            description: 'Create a list item to associate a book with a list',
         }, 400: {
             content: {
                 'application/json': {
@@ -146,15 +152,15 @@ export const createListRoute = createRoute({
     },
 })
 
-export const updateListRoute = createRoute({
+export const updateListItemRoute = createRoute({
     method: 'patch',
-    path: '/list/{id}',
+    path: '/listitem/{id}',
     request: {
-        params: ListIdParams,
+        params: ListItemIdParams,
         body: {
             content: {
                 'application/json': {
-                    schema: UpdateListDto
+                    schema: UpdateListItemDto
                 }
             }
         }
@@ -163,10 +169,10 @@ export const updateListRoute = createRoute({
         200: {
             content: {
                 'application/json': {
-                    schema: ListRowSchema,
+                    schema: ListItemRowSchema,
                 },
             },
-            description: 'Update a list in the database',
+            description: 'Update a list item',
         }, 400: {
             content: {
                 'application/json': {
@@ -192,20 +198,20 @@ export const updateListRoute = createRoute({
     },
 })
 
-export const deleteListRoute = createRoute({
+export const deleteListItemRoute = createRoute({
     method: 'delete',
-    path: '/list/{id}',
+    path: '/listitem/{id}',
     request: {
-        params: ListIdParams
+        params: ListItemIdParams,
     },
     responses: {
         200: {
             content: {
                 'application/json': {
-                    schema: ListRowSchema,
+                    schema: ListItemRowSchema,
                 },
             },
-            description: 'Delete list from database',
+            description: 'Delete a list item',
         }, 400: {
             content: {
                 'application/json': {

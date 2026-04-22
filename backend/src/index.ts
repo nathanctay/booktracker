@@ -4,11 +4,12 @@ import { getBookInfo, getBooks, getSeries, HardcoverError } from "./utils/books"
 import { bookInfoRoute } from './routes/bookInfo';
 import { seriesInfoRoute } from './routes/seriesInfo';
 import { bookSearchRoute } from './routes/bookSearch';
-import { addBookRoute, getBookRoute } from './routes/books';
+import { createBookRoute, deleteBookRoute, getBookRoute, updateBookRoute } from './routes/books';
 import { db } from './db';
 import { books, listItems, lists } from './db/schema';
 import { eq } from 'drizzle-orm';
-import { addListItemRoute, addListRoute, getListRoute } from './routes/lists';
+import { createListRoute, deleteListRoute, getListRoute, updateListRoute } from './routes/lists';
+import { createListItemRoute, deleteListItemRoute, getListItemRoute, updateListItemRoute } from './routes/listItems';
 
 
 const app = new OpenAPIHono({
@@ -31,7 +32,7 @@ const app = new OpenAPIHono({
 
 app.use('/*', cors({
     origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
-    allowMethods: ['POST', 'GET', 'OPTIONS', 'DELETE', 'PATCH', 'PUT'],
+    allowMethods: ['POST', 'GET', 'OPTIONS', 'DELETE', 'PATCH'],
     allowHeaders: ['Content-Type']
 }))
 
@@ -39,26 +40,32 @@ app.get('/', (c) => c.text("Hello World!"))
 
 app.openapi(bookInfoRoute, async (c) => {
     const { id: bookId } = c.req.valid('param')
+
     try {
         const result = await getBookInfo(bookId)
+
         return c.json(result, 200)
     } catch (e) {
         if (e instanceof HardcoverError) {
             return c.json({ error: e.message }, 502)
         }
+
         return c.json({ error: 'Internal server error' }, 500)
     }
 })
 
 app.openapi(seriesInfoRoute, async (c) => {
     const { id: seriesId } = c.req.valid('param')
+
     try {
         const result = await getSeries(seriesId)
-        return c.json(result)
+
+        return c.json(result, 200)
     } catch (e) {
         if (e instanceof HardcoverError) {
             return c.json({ error: e.message }, 502)
         }
+
         return c.json({ error: 'Internal server error' }, 500)
     }
 })
@@ -68,17 +75,20 @@ app.openapi(bookSearchRoute, async (c) => {
 
     try {
         const result = await getBooks(q)
-        return c.json(result)
+
+        return c.json(result, 200)
     } catch (e) {
         if (e instanceof HardcoverError) {
             return c.json({ error: e.message }, 502)
         }
+
         return c.json({ error: 'Internal server error' }, 500)
     }
 })
 
 app.openapi(getBookRoute, async (c) => {
     const { id: bookId } = c.req.valid('param')
+
     try {
         const bookInfo = await db.query.books.findFirst({
             where: eq(books.id, bookId),
@@ -88,20 +98,67 @@ app.openapi(getBookRoute, async (c) => {
                 }
             }
         })
+
         if (!bookInfo) {
             return c.json({ error: 'Book not found' }, 404)
         }
+
         return c.json(bookInfo, 200)
     } catch (e) {
         return c.json({ error: 'Internal server error' }, 500)
     }
 })
 
-app.openapi(addBookRoute, async (c) => {
+app.openapi(createBookRoute, async (c) => {
     const body = c.req.valid('json')
+
     try {
-        const result = await db.insert(books).values({ ...body }).returning()
-        return c.json(result, 200)
+        const result = await db
+            .insert(books)
+            .values({ ...body })
+            .returning()
+
+        return c.json(result, 201)
+    } catch (e) {
+        return c.json({ error: 'Internal server error' }, 500)
+    }
+})
+
+app.openapi(updateBookRoute, async (c) => {
+    const { id: bookId } = c.req.valid('param')
+    const body = c.req.valid('json')
+
+    try {
+        const bookInfo = await db
+            .update(books)
+            .set({ ...body })
+            .where(eq(books.id, bookId))
+            .returning()
+
+        if (bookInfo.length === 0) {
+            return c.json({ error: 'Book not found' }, 404)
+        }
+
+        return c.json(bookInfo, 200)
+    } catch (e) {
+        return c.json({ error: 'Internal server error' }, 500)
+    }
+})
+
+app.openapi(deleteBookRoute, async (c) => {
+    const { id: bookId } = c.req.valid('param')
+
+    try {
+        const bookInfo = await db
+            .delete(books)
+            .where(eq(books.id, bookId))
+            .returning()
+
+        if ((bookInfo.length === 0)) {
+            return c.json({ error: 'Book not found' }, 404)
+        }
+
+        return c.json(bookInfo, 200)
     } catch (e) {
         return c.json({ error: 'Internal server error' }, 500)
     }
@@ -109,8 +166,8 @@ app.openapi(addBookRoute, async (c) => {
 
 app.openapi(getListRoute, async (c) => {
     const { id: listId } = c.req.valid('param')
-    try {
 
+    try {
         const listInfo = await db.query.lists.findFirst({
             where: eq(lists.id, listId),
             with: {
@@ -123,33 +180,134 @@ app.openapi(getListRoute, async (c) => {
         if (!listInfo) {
             return c.json({ error: 'List not found' }, 404)
         }
+
         return c.json(listInfo, 200)
     } catch (e) {
         return c.json({ error: 'Internal server error' }, 500)
     }
 })
 
-app.openapi(addListRoute, async (c) => {
+app.openapi(createListRoute, async (c) => {
     const body = c.req.valid('json')
+
     try {
         const result = await db.insert(lists).values({ ...body }).returning()
-        return c.json(result, 200)
+
+        return c.json(result, 201)
     } catch (e) {
         return c.json({ error: 'Internal server error' }, 500)
     }
 })
 
-app.openapi(addListItemRoute, async (c) => {
+app.openapi(updateListRoute, async (c) => {
+    const { id: listId } = c.req.valid('param')
+    const body = c.req.valid('json')
+
+    try {
+        const listInfo = await db
+            .update(lists)
+            .set({ ...body })
+            .where(eq(lists.id, listId))
+            .returning()
+
+        if (listInfo.length === 0) {
+            return c.json({ error: 'List not found' }, 404)
+        }
+
+        return c.json(listInfo, 200)
+    } catch (e) {
+        return c.json({ error: 'Internal server error' }, 500)
+    }
+})
+
+app.openapi(deleteListRoute, async (c) => {
+    const { id: listId } = c.req.valid('param')
+
+    try {
+        const listInfo = await db
+            .delete(lists)
+            .where(eq(lists.id, listId))
+            .returning()
+
+        if (listInfo.length === 0) {
+            return c.json({ error: 'List not found' }, 404)
+        }
+
+        return c.json(listInfo, 200)
+    } catch (e) {
+        return c.json({ error: 'Internal server error' }, 500)
+    }
+})
+
+app.openapi(createListItemRoute, async (c) => {
     const body = c.req.valid('json')
 
     try {
         const result = await db.insert(listItems).values({ ...body }).returning()
-        return c.json(result, 200)
+
+        return c.json(result, 201)
     } catch (e) {
         return c.json({ error: 'Internal server error' }, 500)
     }
 })
 
+app.openapi(getListItemRoute, async (c) => {
+    const { id: listItemId } = c.req.valid('param')
 
+    try {
+        const listItemInfo = await db.query.listItems.findFirst({
+            where: eq(listItems.id, listItemId),
+            with: {
+                list: true,
+                book: true,
+            },
+        })
+
+        if (!listItemInfo) {
+            return c.json({ error: 'List Item not found' }, 404)
+        }
+
+        return c.json(listItemInfo, 200)
+    } catch (e) {
+        return c.json({ error: 'Internal server error' }, 500)
+    }
+})
+
+app.openapi(updateListItemRoute, async (c) => {
+    const { id: listItemId } = c.req.valid('param')
+    const body = c.req.valid('json')
+
+    try {
+        const listItemInfo = await db
+            .update(listItems)
+            .set({ ...body })
+            .where(eq(listItems.id, listItemId))
+            .returning()
+
+        if (listItemInfo.length === 0) {
+            return c.json({ error: 'List Item not found' }, 404)
+        }
+        return c.json(listItemInfo, 200)
+    } catch (e) {
+        return c.json({ error: 'Internal server error' }, 500)
+    }
+})
+
+app.openapi(deleteListItemRoute, async (c) => {
+    const { id: listItemId } = c.req.valid('param')
+    try {
+        const listItemInfo = await db
+            .delete(listItems)
+            .where(eq(listItems.id, listItemId))
+            .returning()
+
+        if (listItemInfo.length === 0) {
+            return c.json({ error: 'List Item not found' }, 404)
+        }
+        return c.json(listItemInfo, 200)
+    } catch (e) {
+        return c.json({ error: 'Internal server error' }, 500)
+    }
+})
 
 export default app

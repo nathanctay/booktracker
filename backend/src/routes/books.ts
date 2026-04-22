@@ -1,7 +1,7 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import { ErrorSchema, UpstreamErrorSchema } from "./schemas";
 
-const GetBookParams = z.object({
+const BookIdParams = z.object({
     id: z
         .coerce
         .number()
@@ -14,55 +14,37 @@ const GetBookParams = z.object({
         })
 })
 
-const AddBookParams = z.object({
+const CreateBookDto = z.object({
     hardcoverId: z
         .coerce
         .number()
         .openapi({
-            param: {
-                name: 'hardcoverId',
-                in: 'path',
-            },
             example: 1234,
         }),
     title: z
         .string()
         .openapi({
-            param: {
-                name: 'title',
-                in: 'path'
-            },
             example: "The Lord of the Rings"
         }),
     pageCount: z
         .coerce
         .number()
         .openapi({
-            param: {
-                name: 'pageCount',
-                in: 'path',
-            },
             example: 700,
         }),
     author: z
         .string()
         .openapi({
-            param: {
-                name: 'author',
-                in: 'path'
-            },
             example: "Frank Herbert"
         }),
     coverUrl: z
         .url()
         .openapi({
-            param: {
-                name: 'coverUrl',
-                in: 'path'
-            },
             example: "https://assets.hardcover.app/editions/abc123.jpg"
         }),
 })
+
+const UpdateBookDto = CreateBookDto.partial()
 
 const GetBookSchema = z.object({
     title: z.string(),
@@ -82,24 +64,25 @@ const GetBookSchema = z.object({
             position: z.number().nullable(),
             bookId: z.number().nullable(),
             listId: z.number().nullable(),
-            addedAt: z.date().nullable(),
+            addedAt: z.string().nullable(),
             list:
                 z.object({
                     description: z.string().nullable(),
                     name: z.string(),
                     id: z.number(),
-                    createdAt: z.date().nullable(),
+                    createdAt: z.string().nullable(),
                 }).nullable()
         })
     )
 })
 
-const AddBookSchema = z.array(
+const BookRowSchema = z.array(
     z.object({
         title: z.string(),
         id: z.number(),
         author: z.string(),
         pageCount: z.number(),
+        coverUrl: z.url(),
         hardcoverId: z.number(),
         progress: z.number().nullable(),
         complete: z.boolean().nullable(),
@@ -113,7 +96,7 @@ export const getBookRoute = createRoute({
     method: 'get',
     path: '/book/{id}',
     request: {
-        params: GetBookParams
+        params: BookIdParams
     },
     responses: {
         200: {
@@ -122,7 +105,7 @@ export const getBookRoute = createRoute({
                     schema: GetBookSchema,
                 },
             },
-            description: 'Retrieve book from database',
+            description: 'Retrieve book from the database',
         }, 400: {
             content: {
                 'application/json': {
@@ -148,26 +131,26 @@ export const getBookRoute = createRoute({
     },
 })
 
-export const addBookRoute = createRoute({
+export const createBookRoute = createRoute({
     method: 'post',
-    path: '/add-book',
+    path: '/book',
     request: {
         body: {
             content: {
                 'application/json': {
-                    schema: AddBookParams
+                    schema: CreateBookDto
                 }
             }
         }
     },
     responses: {
-        200: {
+        201: {
             content: {
                 'application/json': {
-                    schema: AddBookSchema,
+                    schema: BookRowSchema,
                 },
             },
-            description: 'Add a book to the database',
+            description: 'Create a book in the database',
         }, 400: {
             content: {
                 'application/json': {
@@ -182,6 +165,91 @@ export const addBookRoute = createRoute({
                 },
             },
             description: 'Internal server error',
+        }
+    },
+})
+
+export const updateBookRoute = createRoute({
+    method: 'patch',
+    path: '/book/{id}',
+    request: {
+        params: BookIdParams,
+        body: {
+            content: {
+                'application/json': {
+                    schema: UpdateBookDto
+                }
+            }
+        }
+    },
+    responses: {
+        200: {
+            content: {
+                'application/json': {
+                    schema: BookRowSchema,
+                },
+            },
+            description: 'Update a book in the database',
+        }, 400: {
+            content: {
+                'application/json': {
+                    schema: ErrorSchema,
+                },
+            },
+            description: 'Returns an error',
+        }, 500: {
+            content: {
+                'application/json': {
+                    schema: UpstreamErrorSchema,
+                },
+            },
+            description: 'Internal server error',
+        }, 404: {
+            content: {
+                'application/json': {
+                    schema: UpstreamErrorSchema,
+                },
+            },
+            description: 'Record not found',
+        }
+    },
+})
+
+export const deleteBookRoute = createRoute({
+    method: 'delete',
+    path: '/book/{id}',
+    request: {
+        params: BookIdParams
+    },
+    responses: {
+        200: {
+            content: {
+                'application/json': {
+                    schema: BookRowSchema,
+                },
+            },
+            description: 'Delete a book from the database',
+        }, 400: {
+            content: {
+                'application/json': {
+                    schema: ErrorSchema,
+                },
+            },
+            description: 'Returns an error',
+        }, 500: {
+            content: {
+                'application/json': {
+                    schema: UpstreamErrorSchema,
+                },
+            },
+            description: 'Internal server error',
+        }, 404: {
+            content: {
+                'application/json': {
+                    schema: UpstreamErrorSchema,
+                },
+            },
+            description: 'Record not found',
         }
     },
 })
