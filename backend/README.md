@@ -1,15 +1,43 @@
 # backend
 
-To install dependencies:
+## Prerequisites
+
+- [Bun](https://bun.com) v1.3+
+- A running PostgreSQL database (local or remote)
+
+## Setup
+
+1. Install dependencies:
 
 ```bash
 bun install
 ```
 
-To run:
+2. Create a `.env` file in the project root:
 
-```bash
-bun run index.ts
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/bookplanner
+HARDCOVER_KEY=your_hardcover_api_key
+CORS_ORIGIN=http://localhost:5173
 ```
 
-This project was created using `bun init` in bun v1.3.12. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+3. Generate and run database migrations:
+
+```bash
+bunx drizzle-kit generate
+bunx drizzle-kit migrate
+```
+
+## Running
+
+Development (with hot reload):
+
+```bash
+bun dev
+```
+
+Production:
+
+```bash
+bun start
+```
