@@ -7,6 +7,10 @@ export const ErrorSchema = z.object({
     message: z.string().openapi({
         example: 'Bad Request',
     }),
+    errors: z.record(z.string(), z.array(z.string())).openapi({
+        example: '{"id":["Invalid input: expected number, received NaN"]}'
+    }),
+    formErrors: z.array(z.string()).optional()
 })
 
 export const UpstreamErrorSchema = z.object({
