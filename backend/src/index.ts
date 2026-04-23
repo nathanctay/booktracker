@@ -10,6 +10,7 @@ import { books, listItems, lists } from './db/schema';
 import { eq } from 'drizzle-orm';
 import { createListRoute, deleteListRoute, getListRoute, updateListRoute } from './routes/lists';
 import { createListItemRoute, deleteListItemRoute, getListItemRoute, updateListItemRoute } from './routes/listItems';
+import { auth } from './utils/auth';
 
 
 const app = new OpenAPIHono({
@@ -29,6 +30,21 @@ const app = new OpenAPIHono({
 
     }
 })
+
+app.use(
+    "/auth/*", // or replace with "*" to enable cors for all routes
+    cors({
+        origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
+        allowHeaders: ["Content-Type", "Authorization"],
+        allowMethods: ["POST", "GET", "OPTIONS"],
+        exposeHeaders: ["Content-Length"],
+        maxAge: 600,
+        credentials: true,
+    }),
+);
+
+app.on(["POST", "GET"], "/auth/*", (c) => auth.handler(c.req.raw));
+
 
 app.use('/*', cors({
     origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',

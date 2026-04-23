@@ -1,6 +1,13 @@
-import { Link, NavLink, Outlet } from "react-router"
+import { Navigate, NavLink, Outlet, useNavigate } from "react-router"
+import { useSession } from "../utils/auth-client"
 
-function NavLayout() {
+function ProtectedLayout() {
+    const { data: session, isPending } = useSession()
+
+    // Show loading spinner
+    // if (isPending) return <Spinner />
+    if (!session) return <Navigate to={'/login'} replace />
+
     return (
         <div className="flex h-screen w-full">
             <div className="sidebar bg-blue-400 w-[100px] sm:w-[300px] p-[16px] text-white flex flex-col gap-[50px]">
@@ -51,5 +58,5 @@ function NavLayout() {
         </div>
     )
 }
-export default NavLayout
+export default ProtectedLayout
 

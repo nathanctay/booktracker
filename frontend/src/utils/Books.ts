@@ -11,7 +11,7 @@ export async function getBookInfo(bookId: string) {
     }
 }
 
-export async function getBooks(searchQuery: string) {
+export async function searchBooks(searchQuery: string) {
     try {
         console.log(import.meta.env.VITE_BACKEND_URL)
         const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/book-search/${searchQuery}`)

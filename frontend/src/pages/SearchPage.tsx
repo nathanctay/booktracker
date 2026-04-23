@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router"
-import { getBookInfo, getBooks } from "../utils/books";
+import { getBookInfo, searchBooks } from "../utils/books";
 
 function SearchPage() {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -23,7 +23,7 @@ function SearchPage() {
         async function getBookResults() {
             const q = searchParams.get('q')
             if (q) {
-                const bookResults = await getBooks(q)
+                const bookResults = await searchBooks(q)
                 setBooks(bookResults)
             }
         }

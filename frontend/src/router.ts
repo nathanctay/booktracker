@@ -1,16 +1,31 @@
 import { createBrowserRouter } from 'react-router';
-import NavLayout from './layouts/NavLayout';
+import ProtectedLayout from './layouts/NavLayout';
 import HomePage from './pages/HomePage';
 import BookInfoPage from './pages/BookInfoPage';
 import ListsPage from './pages/ListsPage';
 import SearchPage from './pages/SearchPage';
+import LandingPage from './pages/LandingPage';
+import SignInPage from './pages/SignInPage';
+import SignUpPage from './pages/SignUpPage';
 
 export const router = createBrowserRouter([
     {
-        Component: NavLayout,
+        index: true,
+        Component: LandingPage
+    },
+    {
+        path: '/login',
+        Component: SignInPage
+    },
+    {
+        path: '/signup',
+        Component: SignUpPage
+    },
+    {
+        Component: ProtectedLayout,
         children: [
             {
-                index: true,
+                path: "home",
                 Component: HomePage,
             },
             {
