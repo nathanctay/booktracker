@@ -24,8 +24,10 @@ const CreateListItemDto = z.object({
     listId: z
         .coerce
         .number()
+        .optional()
         .openapi({
             example: 1234,
+            description: "if omitted, defaults to the users default list"
         }),
     position: z
         .coerce
@@ -141,6 +143,13 @@ export const createListItemRoute = createRoute({
                 },
             },
             description: 'Returns an error',
+        }, 404: {
+            content: {
+                'application/json': {
+                    schema: UpstreamErrorSchema,
+                },
+            },
+            description: 'Record not found',
         }, 500: {
             content: {
                 'application/json': {

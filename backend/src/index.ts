@@ -4,11 +4,11 @@ import { getBookInfo, getBooks, getSeries, HardcoverError } from "./utils/books"
 import { bookInfoRoute } from './routes/bookInfo';
 import { seriesInfoRoute } from './routes/seriesInfo';
 import { bookSearchRoute } from './routes/bookSearch';
-import { createBookRoute, deleteBookRoute, getBookRoute, updateBookRoute } from './routes/books';
+import { createBookRoute, deleteBookRoute, getBookRoute, getBooksRoute, updateBookRoute } from './routes/books';
 import { db } from './db';
-import { books, listItems, lists } from './db/schema';
+import { books, listItems, lists, user } from './db/schema';
 import { eq, sql } from 'drizzle-orm';
-import { createListRoute, deleteListRoute, getDefaultListRoute, getListRoute, updateListRoute } from './routes/lists';
+import { createListRoute, deleteListRoute, getDefaultListRoute, getListRoute, getListsRoute, updateListRoute } from './routes/lists';
 import { createListItemRoute, deleteListItemRoute, getListItemRoute, updateListItemRoute } from './routes/listItems';
 import { auth } from './utils/auth';
 import { authMiddleware } from './middleware/auth';
@@ -38,7 +38,6 @@ app.use('*', async (c, next) => {
         await db.execute(sql`SELECT set_config('app.current_user_id', ${session.user.id}, false)`)
     }
     const result = await db.execute(sql`SELECT current_setting('app.current_user_id', true) as user_id`)
-    console.log(`current user id: ${result.rows[0].user_id}`)
     await next()
 })
 
@@ -69,6 +68,14 @@ app.get('/', (c) => c.text("Hello World!"))
 
 // app.use('/book/*', authMiddleware)
 // app.use('/list/*', authMiddleware)
+
+app.doc('/doc', {
+    openapi: '3.0.0',
+    info: {
+        version: '1.0.0',
+        title: 'My API',
+    },
+})
 
 app.openapi(bookInfoRoute, async (c) => {
     const { id: bookId } = c.req.valid('param')
@@ -141,13 +148,29 @@ app.openapi(getBookRoute, async (c) => {
     }
 })
 
+app.openapi(getBooksRoute, async (c) => {
+    try {
+        const bookInfo = await db.query.books.findMany({
+            with: {
+                listItems: {
+                    with: { list: true }
+                }
+            }
+        })
+
+        return c.json(bookInfo, 200)
+    } catch (e) {
+        return c.json({ error: 'Internal server error' }, 500)
+    }
+})
+
 app.openapi(createBookRoute, async (c) => {
     const body = c.req.valid('json')
-
+    const user = c.get('user')
     try {
         const result = await db
             .insert(books)
-            .values({ ...body })
+            .values({ ...body, userId: user.id })
             .returning()
 
         return c.json(result, 201)
@@ -219,6 +242,22 @@ app.openapi(getListRoute, async (c) => {
     }
 })
 
+app.openapi(getListsRoute, async (c) => {
+    try {
+        const listInfo = await db.query.lists.findMany({
+            with: {
+                listItems: {
+                    with: { book: true }
+                }
+            }
+        })
+
+        return c.json(listInfo, 200)
+    } catch (e) {
+        return c.json({ error: 'Internal server error' }, 500)
+    }
+})
+
 app.openapi(getDefaultListRoute, async (c) => {
     const user = c.get('user')
 
@@ -256,9 +295,10 @@ app.openapi(getDefaultListRoute, async (c) => {
 
 app.openapi(createListRoute, async (c) => {
     const body = c.req.valid('json')
+    const user = c.get('user')
 
     try {
-        const result = await db.insert(lists).values({ ...body }).returning()
+        const result = await db.insert(lists).values({ ...body, userId: user.id }).returning()
 
         return c.json(result, 201)
     } catch (e) {
@@ -308,9 +348,20 @@ app.openapi(deleteListRoute, async (c) => {
 
 app.openapi(createListItemRoute, async (c) => {
     const body = c.req.valid('json')
-
+    let listId = body.listId
     try {
-        const result = await db.insert(listItems).values({ ...body }).returning()
+        if (!body.listId) {
+            const listInfo = await db.query.lists.findFirst({
+                where: eq(lists.isDefault, true),
+            })
+
+            if (!listInfo) {
+                return c.json({ error: 'Default list not found' }, 404)
+            }
+
+            listId = listInfo.id
+        }
+        const result = await db.insert(listItems).values({ ...body, listId: listId! }).returning()
 
         return c.json(result, 201)
     } catch (e) {

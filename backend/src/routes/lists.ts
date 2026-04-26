@@ -60,6 +60,37 @@ const GetListSchema = z.object({
         })
     )
 })
+const GetListsSchema = z.array(
+    z.object({
+        id: z.number(),
+        name: z.string(),
+        description: z.string().nullable(),
+        createdAt: z.string().nullable(),
+        listItems: z.array(
+            z.object({
+                id: z.number(),
+                position: z.number().nullable(),
+                bookId: z.number().nullable(),
+                listId: z.number().nullable(),
+                addedAt: z.string().nullable(),
+                book:
+                    z.object({
+                        title: z.string(),
+                        id: z.number(),
+                        author: z.string(),
+                        hardcoverId: z.number(),
+                        pageCount: z.number(),
+                        coverUrl: z.url(),
+                        progress: z.number().nullable(),
+                        complete: z.boolean().nullable(),
+                        dateStarted: z.string().nullable(),
+                        dateFinished: z.string().nullable(),
+                        lastRead: z.string().nullable(),
+                    }).nullable()
+            })
+        )
+    })
+)
 
 const ListRowSchema = z.array(
     z.object({
@@ -109,6 +140,35 @@ export const getListRoute = createRoute({
     },
 })
 
+export const getListsRoute = createRoute({
+    method: 'get',
+    path: '/lists',
+    responses: {
+        200: {
+            content: {
+                'application/json': {
+                    schema: GetListsSchema,
+                },
+            },
+            description: 'Retrieve lists from database',
+        }, 400: {
+            content: {
+                'application/json': {
+                    schema: ErrorSchema,
+                },
+            },
+            description: 'Returns an error',
+        }, 500: {
+            content: {
+                'application/json': {
+                    schema: UpstreamErrorSchema,
+                },
+            },
+            description: 'Internal server error',
+        }
+    },
+})
+
 export const getDefaultListRoute = createRoute({
     method: 'get',
     path: '/list',
@@ -120,7 +180,7 @@ export const getDefaultListRoute = createRoute({
                     schema: GetListSchema,
                 },
             },
-            description: 'Retrieve list from database',
+            description: 'Retrieve default list from database',
         }, 400: {
             content: {
                 'application/json': {

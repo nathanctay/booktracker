@@ -77,6 +77,38 @@ const GetBookSchema = z.object({
     )
 })
 
+const GetBooksSchema = z.array(
+    z.object({
+        title: z.string(),
+        id: z.number(),
+        author: z.string(),
+        hardcoverId: z.number(),
+        pageCount: z.number(),
+        coverUrl: z.url(),
+        progress: z.number().nullable(),
+        complete: z.boolean().nullable(),
+        dateStarted: z.string().nullable(),
+        dateFinished: z.string().nullable(),
+        lastRead: z.string().nullable(),
+        listItems: z.array(
+            z.object({
+                id: z.number(),
+                position: z.number().nullable(),
+                bookId: z.number().nullable(),
+                listId: z.number().nullable(),
+                addedAt: z.string().nullable(),
+                list:
+                    z.object({
+                        description: z.string().nullable(),
+                        name: z.string(),
+                        id: z.number(),
+                        createdAt: z.string().nullable(),
+                    }).nullable()
+            })
+        )
+    })
+)
+
 const BookRowSchema = z.array(
     z.object({
         title: z.string(),
@@ -128,6 +160,35 @@ export const getBookRoute = createRoute({
                 },
             },
             description: 'Record not found',
+        }
+    },
+})
+
+export const getBooksRoute = createRoute({
+    method: 'get',
+    path: '/books',
+    responses: {
+        200: {
+            content: {
+                'application/json': {
+                    schema: GetBooksSchema,
+                },
+            },
+            description: 'Retrieve books from the database',
+        }, 400: {
+            content: {
+                'application/json': {
+                    schema: ErrorSchema,
+                },
+            },
+            description: 'Returns an error',
+        }, 500: {
+            content: {
+                'application/json': {
+                    schema: UpstreamErrorSchema,
+                },
+            },
+            description: 'Internal server error',
         }
     },
 })
