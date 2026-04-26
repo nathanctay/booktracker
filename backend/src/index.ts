@@ -30,7 +30,6 @@ const app = new OpenAPIHono({
 
     }
 })
-
 app.use(
     "/auth/*", // or replace with "*" to enable cors for all routes
     cors({
@@ -43,8 +42,9 @@ app.use(
     }),
 );
 
-app.on(["POST", "GET"], "/auth/*", (c) => auth.handler(c.req.raw));
-
+app.on(['POST', 'GET'], '/auth/*', (c) => {
+    return auth.handler(c.req.raw)
+})
 
 app.use('/*', cors({
     origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',

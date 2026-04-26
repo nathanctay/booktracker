@@ -6,6 +6,7 @@
   --bg: #fff;
   --border: #e5e4e7;
   --code-bg: #f4f3ec;
+  --primary: oklch(70.7% 0.165 254.624);
   --accent: #aa3bff;
   --accent-bg: rgba(170, 59, 255, 0.1);
   --accent-border: rgba(170, 59, 255, 0.5);
@@ -89,7 +90,7 @@ p {
   font-size: 0.625rem;
 }
 
-.navList li {
+.navbar-button {
   display: flex;
   gap: 20px;
   height: 50px;
@@ -97,7 +98,7 @@ p {
   padding: 0 12px;
 }
 
-.navList svg {
+.sidebar svg {
   /* width: 24px; */
   fill: white;
 }
@@ -134,4 +135,45 @@ input[type="checkbox"]::before {
 input[type="checkbox"]:checked::before {
   transform: scale(1);
 
+}
+
+.auth-card {
+  width: 500px;
+  border: solid var(--primary) 2px;
+  border-radius: 20px;
+  /* background-color: var(--primary); */
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.card-header {
+  background-color: var(--primary);
+  color: white;
+  border-radius: 15px 15px 0 0;
+  display: flex;
+  height: 75px;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+  margin-bottom: 8px;
+  padding: 2rem;
+
+}
+
+.auth-form div {
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-form input {
+  color: black;
+  border: black 1px solid;
+  border-radius: 8px;
+  background-color: white;
+  padding: 4px 8px;
 }
