@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "../db";
 import { openAPI, username } from "better-auth/plugins";
+import { lists, user as userTable } from "../db/schema";
 
 export const auth = betterAuth({
     database: drizzleAdapter(db, {
@@ -23,6 +24,17 @@ export const auth = betterAuth({
     ],
     basePath: '/auth',
     trustedOrigins: [process.env.CORS_ORIGIN ?? 'http://localhost:5173'],
+    databaseHooks: {
+        user: {
+            create: {
+                after: async (user) => {
+                    await db
+                        .insert(lists)
+                        .values({ name: "default", userId: user.id, isDefault: true })
+                }
+            }
+        }
+    }
 });
 
 export type AuthType = {

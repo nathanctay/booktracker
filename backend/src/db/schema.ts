@@ -1,8 +1,9 @@
-import { relations, sql } from "drizzle-orm";
-import { boolean, check, date, index, integer, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { boolean, check, date, index, integer, pgPolicy, pgRole, pgTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core";
 
 export const books = pgTable("books", {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
     hardcoverId: integer("hardcover_id").notNull(),
     title: text().notNull(),
     pageCount: integer("page_count").notNull(),
@@ -17,24 +18,109 @@ export const books = pgTable("books", {
     check("progress_check1", sql`${table.progress} >= 0`),
     check("progress_check2", sql`${table.progress} <= ${table.pageCount}`),
     index("hardcover_id_idx").on(table.hardcoverId),
+    pgPolicy('books_select', {
+        as: 'permissive',
+        to: 'public',
+        for: 'select',
+        using: sql`user_id = current_setting('app.current_user_id')::text`
+    }), pgPolicy('books_insert', {
+        as: 'permissive',
+        to: 'public',
+        for: 'insert',
+        withCheck: sql`user_id = current_setting('app.current_user_id')::text`
+    }), pgPolicy('books_update', {
+        as: 'permissive',
+        to: 'public',
+        for: 'update',
+        using: sql`user_id = current_setting('app.current_user_id')::text`
+    }), pgPolicy('books_delete', {
+        as: 'permissive',
+        to: 'public',
+        for: 'delete',
+        using: sql`user_id = current_setting('app.current_user_id')::text`
+    }),
 ]);
 
 export const lists = pgTable("lists", {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
-    name: text().notNull(),
+    userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+    name: text("name").notNull(),
     description: text(),
-    createdAt: timestamp({ withTimezone: true }).default(sql`now()`)
-});
+    isDefault: boolean("is_default").default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`)
+}, (table) => [
+    uniqueIndex("One_default_per_user")
+        .on(table.userId)
+        .where(sql`is_default = true`),
+    pgPolicy('lists_select', {
+        as: 'permissive',
+        to: 'public',
+        for: 'select',
+        using: sql`user_id = current_setting('app.current_user_id')::text`
+    }), pgPolicy('lists_insert', {
+        as: 'permissive',
+        to: 'public',
+        for: 'insert',
+        withCheck: sql`user_id = current_setting('app.current_user_id')::text`
+    }), pgPolicy('lists_update', {
+        as: 'permissive',
+        to: 'public',
+        for: 'update',
+        using: sql`user_id = current_setting('app.current_user_id')::text AND is_default = false`,
+    }), pgPolicy('lists_delete', {
+        as: 'permissive',
+        to: 'public',
+        for: 'delete',
+        using: sql`user_id = current_setting('app.current_user_id')::text AND is_default = false`,
+    })
+]);
 
 export const listItems = pgTable("list_items", {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
-    bookId: integer().references(() => books.id, { onDelete: "cascade" }).notNull(),
-    listId: integer().references(() => lists.id, { onDelete: "cascade" }).notNull(),
+    bookId: integer("book_id").references(() => books.id, { onDelete: "cascade" }).notNull(),
+    listId: integer("list_id").references(() => lists.id, { onDelete: "cascade" }).notNull(),
     position: integer().notNull(),
-    addedAt: timestamp({ withTimezone: true }).default(sql`now()`)
+    addedAt: timestamp("added_at", { withTimezone: true }).default(sql`now()`)
 }, (table) => [
     index("list_items_book_id_idx").on(table.bookId),
     index("list_items_list_id_idx").on(table.listId),
+    pgPolicy('list_items_select', {
+        as: 'permissive',
+        to: 'public',
+        for: 'select',
+        using: sql`exists (
+            select 1 from lists
+            where lists.id = list_id
+            and lists.user_id = current_setting('app.current_user_id')::text
+        )`
+    }), pgPolicy('list_items_insert', {
+        as: 'permissive',
+        to: 'public',
+        for: 'insert',
+        withCheck: sql`exists (
+            select 1 from lists
+            where lists.id = list_id
+            and lists.user_id = current_setting('app.current_user_id')::text
+        )`
+    }), pgPolicy('list_items_update', {
+        as: 'permissive',
+        to: 'public',
+        for: 'update',
+        using: sql`exists (
+            select 1 from lists
+            where lists.id = list_id
+            and lists.user_id = current_setting('app.current_user_id')::text
+        )`
+    }), pgPolicy('list_items_delete', {
+        as: 'permissive',
+        to: 'public',
+        for: 'delete',
+        using: sql`exists (
+            select 1 from lists
+            where lists.id = list_id
+            and lists.user_id = current_setting('app.current_user_id')::text
+        )`
+    }),
 ])
 
 // AUTH
@@ -113,22 +199,5 @@ export const verification = pgTable(
     (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
-export const userRelations = relations(user, ({ many }) => ({
-    sessions: many(session),
-    accounts: many(account),
-}));
 
-export const sessionRelations = relations(session, ({ one }) => ({
-    user: one(user, {
-        fields: [session.userId],
-        references: [user.id],
-    }),
-}));
-
-export const accountRelations = relations(account, ({ one }) => ({
-    user: one(user, {
-        fields: [account.userId],
-        references: [user.id],
-    }),
-}));
 

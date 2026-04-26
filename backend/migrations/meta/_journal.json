@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1776633287097,
-      "tag": "0000_black_the_phantom",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1776753327300,
-      "tag": "0001_tired_doctor_strange",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1776817832251,
-      "tag": "0002_past_wallflower",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1776851791792,
-      "tag": "0003_abandoned_krista_starr",
+      "when": 1777189242926,
+      "tag": "0000_wooden_captain_midlands",
       "breakpoints": true
     }
   ]

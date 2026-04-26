@@ -7,8 +7,8 @@ import { bookSearchRoute } from './routes/bookSearch';
 import { createBookRoute, deleteBookRoute, getBookRoute, updateBookRoute } from './routes/books';
 import { db } from './db';
 import { books, listItems, lists } from './db/schema';
-import { eq } from 'drizzle-orm';
-import { createListRoute, deleteListRoute, getListRoute, updateListRoute } from './routes/lists';
+import { eq, sql } from 'drizzle-orm';
+import { createListRoute, deleteListRoute, getDefaultListRoute, getListRoute, updateListRoute } from './routes/lists';
 import { createListItemRoute, deleteListItemRoute, getListItemRoute, updateListItemRoute } from './routes/listItems';
 import { auth } from './utils/auth';
 
@@ -30,6 +30,15 @@ const app = new OpenAPIHono({
 
     }
 })
+
+app.use('*', async (c, next) => {
+    const session = await auth.api.getSession({ headers: c.req.raw.headers })
+    if (session) {
+        await db.execute(sql`SELECT set_config('app.current_user_id', ${session.user.id}, true)`)
+    }
+    await next()
+})
+
 app.use(
     "/auth/*", // or replace with "*" to enable cors for all routes
     cors({
@@ -195,6 +204,40 @@ app.openapi(getListRoute, async (c) => {
 
         if (!listInfo) {
             return c.json({ error: 'List not found' }, 404)
+        }
+
+        return c.json(listInfo, 200)
+    } catch (e) {
+        return c.json({ error: 'Internal server error' }, 500)
+    }
+})
+
+app.openapi(getDefaultListRoute, async (c) => {
+    try {
+        const listInfo = await db.query.lists.findFirst({
+            where: eq(lists.isDefault, true),
+            with: {
+                listItems: {
+                    with: { book: true }
+                }
+            }
+        })
+
+        if (!listInfo) {
+            const session = await auth.api.getSession({ headers: c.req.raw.headers })
+            await db
+                .insert(lists)
+                .values({ name: "default", userId: session?.user.id, isDefault: true })
+
+            const newList = await db.query.lists.findFirst({
+                where: eq(lists.isDefault, true),
+                with: {
+                    listItems: {
+                        with: { book: true }
+                    }
+                }
+            })
+            return c.json(newList, 200)
         }
 
         return c.json(listInfo, 200)

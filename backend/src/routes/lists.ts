@@ -108,6 +108,35 @@ export const getListRoute = createRoute({
     },
 })
 
+export const getDefaultListRoute = createRoute({
+    method: 'get',
+    path: '/list',
+    responses: {
+        200: {
+            content: {
+                'application/json': {
+                    schema: GetListSchema,
+                },
+            },
+            description: 'Retrieve list from database',
+        }, 400: {
+            content: {
+                'application/json': {
+                    schema: ErrorSchema,
+                },
+            },
+            description: 'Returns an error',
+        }, 500: {
+            content: {
+                'application/json': {
+                    schema: UpstreamErrorSchema,
+                },
+            },
+            description: 'Internal server error',
+        }
+    },
+})
+
 export const createListRoute = createRoute({
     method: 'post',
     path: '/list',
