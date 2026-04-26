@@ -1,5 +1,6 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import { ErrorSchema, UpstreamErrorSchema } from "./schemas";
+import { authMiddleware } from "../middleware/auth";
 
 const BookIdParams = z.object({
     id: z
@@ -134,6 +135,7 @@ export const getBookRoute = createRoute({
 export const createBookRoute = createRoute({
     method: 'post',
     path: '/book',
+    middleware: authMiddleware,
     request: {
         body: {
             content: {

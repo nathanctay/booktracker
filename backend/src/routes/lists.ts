@@ -1,5 +1,6 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import { ErrorSchema, UpstreamErrorSchema } from "./schemas";
+import { authMiddleware } from "../middleware/auth";
 
 const ListIdParams = z.object({
     id: z
@@ -111,6 +112,7 @@ export const getListRoute = createRoute({
 export const getDefaultListRoute = createRoute({
     method: 'get',
     path: '/list',
+    middleware: authMiddleware,
     responses: {
         200: {
             content: {
@@ -140,6 +142,7 @@ export const getDefaultListRoute = createRoute({
 export const createListRoute = createRoute({
     method: 'post',
     path: '/list',
+    middleware: authMiddleware,
     request: {
         body: {
             content: {

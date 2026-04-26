@@ -11,6 +11,7 @@ import { eq, sql } from 'drizzle-orm';
 import { createListRoute, deleteListRoute, getDefaultListRoute, getListRoute, updateListRoute } from './routes/lists';
 import { createListItemRoute, deleteListItemRoute, getListItemRoute, updateListItemRoute } from './routes/listItems';
 import { auth } from './utils/auth';
+import { authMiddleware } from './middleware/auth';
 
 
 const app = new OpenAPIHono({
@@ -27,20 +28,22 @@ const app = new OpenAPIHono({
                 400
             )
         }
-
     }
 })
 
 app.use('*', async (c, next) => {
     const session = await auth.api.getSession({ headers: c.req.raw.headers })
     if (session) {
-        await db.execute(sql`SELECT set_config('app.current_user_id', ${session.user.id}, true)`)
+        c.set('user', session.user)
+        await db.execute(sql`SELECT set_config('app.current_user_id', ${session.user.id}, false)`)
     }
+    const result = await db.execute(sql`SELECT current_setting('app.current_user_id', true) as user_id`)
+    console.log(`current user id: ${result.rows[0].user_id}`)
     await next()
 })
 
 app.use(
-    "/auth/*", // or replace with "*" to enable cors for all routes
+    "/auth/*",
     cors({
         origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
         allowHeaders: ["Content-Type", "Authorization"],
@@ -58,10 +61,14 @@ app.on(['POST', 'GET'], '/auth/*', (c) => {
 app.use('/*', cors({
     origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
     allowMethods: ['POST', 'GET', 'OPTIONS', 'DELETE', 'PATCH'],
-    allowHeaders: ['Content-Type']
+    allowHeaders: ['Content-Type'],
+    credentials: true,
 }))
 
 app.get('/', (c) => c.text("Hello World!"))
+
+// app.use('/book/*', authMiddleware)
+// app.use('/list/*', authMiddleware)
 
 app.openapi(bookInfoRoute, async (c) => {
     const { id: bookId } = c.req.valid('param')
@@ -213,6 +220,8 @@ app.openapi(getListRoute, async (c) => {
 })
 
 app.openapi(getDefaultListRoute, async (c) => {
+    const user = c.get('user')
+
     try {
         const listInfo = await db.query.lists.findFirst({
             where: eq(lists.isDefault, true),
@@ -224,10 +233,9 @@ app.openapi(getDefaultListRoute, async (c) => {
         })
 
         if (!listInfo) {
-            const session = await auth.api.getSession({ headers: c.req.raw.headers })
             await db
                 .insert(lists)
-                .values({ name: "default", userId: session?.user.id, isDefault: true })
+                .values({ name: "default", userId: user.id, isDefault: true })
 
             const newList = await db.query.lists.findFirst({
                 where: eq(lists.isDefault, true),
