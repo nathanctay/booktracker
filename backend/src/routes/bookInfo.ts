@@ -19,7 +19,7 @@ const BookInfoSchema = z.object({
         book_series: z.array(z.object({
             position: z.number(),
             series: z.object({
-                books_count: z.number(),
+                primary_books_count: z.number(),
                 id: z.number(),
                 name: z.string()
             })
@@ -28,23 +28,27 @@ const BookInfoSchema = z.object({
             author: z.object({
                 name: z.string()
             }),
-            contribution: z.string().nullable(),
+            contribution: z.string().optional(),
             contributable_type: z.enum(["Book", "Edition"])
         })),
-        description: z.string().nullable(),
-        headline: z.string().nullable(),
+        description: z.string().optional(),
+        headline: z.string().optional(),
         image: z.object({
             url: z.url()
-        }).nullable(),
-        pages: z.number().nullable(),
-        release_year: z.number().nullable(),
+        }).optional(),
+        pages: z.number().optional(),
+        release_year: z.number().optional(),
         title: z.string()
     }),
     saved: z.array(
         z.object({
             title: z.string(),
             id: z.number(),
-            author: z.string(),
+            author: z.array(
+                z.object({
+                    name: z.string()
+                })
+            ),
             hardcoverId: z.number(),
             pageCount: z.number(),
             coverUrl: z.url(),

@@ -22,27 +22,27 @@ const CreateBookDto = z.object({
         .openapi({
             example: 1234,
         }),
-    title: z
-        .string()
-        .openapi({
-            example: "The Lord of the Rings"
-        }),
-    pageCount: z
-        .coerce
-        .number()
-        .openapi({
-            example: 700,
-        }),
-    author: z
-        .string()
-        .openapi({
-            example: "Frank Herbert"
-        }),
-    coverUrl: z
-        .url()
-        .openapi({
-            example: "https://assets.hardcover.app/editions/abc123.jpg"
-        }),
+    // title: z
+    //     .string()
+    //     .openapi({
+    //         example: "The Lord of the Rings"
+    //     }),
+    // pageCount: z
+    //     .coerce
+    //     .number()
+    //     .openapi({
+    //         example: 700,
+    //     }),
+    // author: z
+    //     .string()
+    //     .openapi({
+    //         example: "Frank Herbert"
+    //     }),
+    // coverUrl: z
+    //     .url()
+    //     .openapi({
+    //         example: "https://assets.hardcover.app/editions/abc123.jpg"
+    //     }),
 })
 
 const UpdateBookDto = CreateBookDto.partial()
@@ -50,7 +50,11 @@ const UpdateBookDto = CreateBookDto.partial()
 const GetBookSchema = z.object({
     title: z.string(),
     id: z.number(),
-    author: z.string(),
+    author: z.array(
+        z.object({
+            name: z.string()
+        })
+    ),
     hardcoverId: z.number(),
     pageCount: z.number(),
     coverUrl: z.url(),
@@ -81,7 +85,11 @@ const GetBooksSchema = z.array(
     z.object({
         title: z.string(),
         id: z.number(),
-        author: z.string(),
+        author: z.array(
+            z.object({
+                name: z.string()
+            })
+        ),
         hardcoverId: z.number(),
         pageCount: z.number(),
         coverUrl: z.url(),
@@ -113,7 +121,11 @@ const BookRowSchema = z.array(
     z.object({
         title: z.string(),
         id: z.number(),
-        author: z.string(),
+        author: z.array(
+            z.object({
+                name: z.string()
+            })
+        ),
         pageCount: z.number(),
         coverUrl: z.url(),
         hardcoverId: z.number(),

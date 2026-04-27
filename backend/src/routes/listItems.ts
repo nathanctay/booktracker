@@ -32,6 +32,7 @@ const CreateListItemDto = z.object({
     position: z
         .coerce
         .number()
+        .optional()
         .openapi({
             example: 1,
         }),
@@ -48,7 +49,11 @@ const GetListItemSchema = z.object({
     book: z.object({
         title: z.string(),
         id: z.number(),
-        author: z.string(),
+        author: z.array(
+            z.object({
+                name: z.string()
+            })
+        ),
         hardcoverId: z.number(),
         pageCount: z.number(),
         coverUrl: z.url(),

@@ -13,8 +13,11 @@ import { createListItemRoute, deleteListItemRoute, getListItemRoute, updateListI
 import { auth } from './utils/auth';
 import { authMiddleware } from './middleware/auth';
 
+type Variables = {
+    user: typeof auth.$Infer.Session.user
+}
 
-const app = new OpenAPIHono({
+const app = new OpenAPIHono<{ Variables: Variables }>({
     defaultHook: (result, c) => {
         if (!result.success) {
             const { fieldErrors, formErrors } = result.error.flatten()
@@ -82,7 +85,6 @@ app.openapi(bookInfoRoute, async (c) => {
 
     try {
         const result = await getBookInfo(bookId)
-
         const bookInfo = await db.query.books.findMany({
             where: eq(books.hardcoverId, bookId),
             with: {
@@ -94,7 +96,7 @@ app.openapi(bookInfoRoute, async (c) => {
 
         return c.json({
             hardcover: { ...result },
-            saved: { ...bookInfo }
+            saved: bookInfo.length > 0 ? bookInfo.map(({ userId, ...rest }) => rest) : null
         }, 200)
     } catch (e) {
         if (e instanceof HardcoverError) {
@@ -180,11 +182,14 @@ app.openapi(createBookRoute, async (c) => {
     const body = c.req.valid('json')
     const user = c.get('user')
     try {
+        const bookInfo = await getBookInfo(body.hardcoverId)
+        const author = bookInfo.contributions.map((con) => {
+            return con.author
+        })
         const result = await db
             .insert(books)
-            .values({ ...body, userId: user.id })
+            .values({ userId: user.id, hardcoverId: body.hardcoverId, title: bookInfo.title, pageCount: bookInfo.pages ?? 0, author, coverUrl: bookInfo.image?.url || '' })
             .returning()
-
         return c.json(result, 201)
     } catch (e) {
         return c.json({ error: 'Internal server error' }, 500)
@@ -361,10 +366,15 @@ app.openapi(deleteListRoute, async (c) => {
 app.openapi(createListItemRoute, async (c) => {
     const body = c.req.valid('json')
     let listId = body.listId
+    let position = body.position
+    let listInfo
     try {
         if (!body.listId) {
-            const listInfo = await db.query.lists.findFirst({
+            listInfo = await db.query.lists.findFirst({
                 where: eq(lists.isDefault, true),
+                with: {
+                    listItems: true
+                }
             })
 
             if (!listInfo) {
@@ -373,7 +383,13 @@ app.openapi(createListItemRoute, async (c) => {
 
             listId = listInfo.id
         }
-        const result = await db.insert(listItems).values({ ...body, listId: listId! }).returning()
+        if (!body.position) {
+            if (!listInfo) {
+                return c.json({ error: 'Default list not found' }, 404)
+            }
+            position = listInfo.listItems.length + 1
+        }
+        const result = await db.insert(listItems).values({ bookId: body.bookId, listId: listId!, position: position ?? 0 }).returning()
 
         return c.json(result, 201)
     } catch (e) {

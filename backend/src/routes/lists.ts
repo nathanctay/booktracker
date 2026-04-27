@@ -47,7 +47,11 @@ const GetListSchema = z.object({
                 z.object({
                     title: z.string(),
                     id: z.number(),
-                    author: z.string(),
+                    author: z.array(
+                        z.object({
+                            name: z.string()
+                        })
+                    ),
                     hardcoverId: z.number(),
                     pageCount: z.number(),
                     coverUrl: z.url(),
@@ -77,7 +81,11 @@ const GetListsSchema = z.array(
                     z.object({
                         title: z.string(),
                         id: z.number(),
-                        author: z.string(),
+                        author: z.array(
+                            z.object({
+                                name: z.string()
+                            })
+                        ),
                         hardcoverId: z.number(),
                         pageCount: z.number(),
                         coverUrl: z.url(),

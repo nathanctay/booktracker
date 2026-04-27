@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { boolean, check, date, index, integer, pgPolicy, pgRole, pgTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core";
+import { boolean, check, date, index, integer, json, pgPolicy, pgRole, pgTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core";
 
 export const books = pgTable("books", {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -7,7 +7,7 @@ export const books = pgTable("books", {
     hardcoverId: integer("hardcover_id").notNull(),
     title: text().notNull(),
     pageCount: integer("page_count").notNull(),
-    author: text().notNull(),
+    author: json().$type<{ name: string }[]>().notNull(),
     coverUrl: text("cover_url").notNull(),
     progress: integer().default(0),
     complete: boolean().default(false),

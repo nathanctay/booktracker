@@ -5,14 +5,40 @@ export class HardcoverError extends Error {
     }
 }
 
-export async function getBookInfo(bookId: number) {
+interface BookInfo {
+    book_series: {
+        position: number,
+        series: {
+            primary_books_count: number,
+            id: number,
+            name: string
+        }
+    }[],
+    contributions: {
+        author: {
+            name: string
+        },
+        contribution?: string,
+        contributable_type: "Book" | "Edition"
+    }[],
+    description?: string,
+    headline?: string,
+    image?: {
+        url: string
+    },
+    pages?: number,
+    release_year?: number,
+    title: string
+}
+
+export async function getBookInfo(bookId: number): Promise<BookInfo> {
     const query = `
     {
         books(where: {id: {_eq: ${bookId}}}) {
             book_series {
                 position
                 series{
-                    books_count
+                    primary_books_count
                     id
                     name
                 }
@@ -112,7 +138,7 @@ async function fetchHardcoverGraphQL(query: string) {
         body: JSON.stringify({ query: query })
     })
 
-    const result = await response.json()
+    const result = await response.json() as any
     if (result.error) {
         throw new HardcoverError(result.error)
     }
