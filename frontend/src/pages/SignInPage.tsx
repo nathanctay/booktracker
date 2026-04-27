@@ -106,7 +106,7 @@ export default function SignInPage() {
                             {error}
                         </p>
                     )}
-                    <button disabled={pending} type="submit" className="bg-[var(--primary)] rounded-lg py-1 mt-4 text-white cursor-pointer shadow-md hover:shadow-none">Sign Up Now</button>
+                    <button disabled={pending} type="submit" className="bg-[var(--primary)] rounded-lg py-1 mt-4 text-white cursor-pointer shadow-md hover:shadow-none">Sign In</button>
                     <p className="text-center">Don't have an account yet? <a href="/signup" className="underline">Sign up</a></p>
                 </form>
             </div>

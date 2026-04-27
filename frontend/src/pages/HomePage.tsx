@@ -5,48 +5,27 @@ import type { Book } from '../types/Book';
 import { useEffect, useState } from 'react';
 import { SortableListItem } from '../components/ListItem';
 
-const bookList: Book[] = [
-    {
-        id: 1,
-        title: "Cats Cradle",
-        pageCount: 234,
-        author: "Kurt Vonnegut",
-        complete: true
-    },
-    {
-        id: 2,
-        title: "Dune",
-        pageCount: 10000,
-        author: "Frank Herbert",
-        complete: false
-    },
-    {
-        id: 3,
-        title: "The Invention of Hugo Cabret",
-        pageCount: 534,
-        author: "Brian Selznick",
-        complete: false
-    }
-]
-
-
-
 function HomePage() {
     const [books, setBooks] = useState<Book[]>([]);
 
     useEffect(() => {
-        setBooks(bookList)
+        async function getList() {
+            const result = await fetch(`${import.meta.env.VITE_BACKEND_URL}/list`, { credentials: 'include' })
+            const list = await result.json()
+            console.log(list)
+            setBooks(list.listItems)
+        }
+        getList()
     }, [])
 
     function completeBook(book: Book) {
         let updatedList = books!.map(b => {
             if (b.id == book.id) {
-                b.complete = book.complete ? !book.complete : true
+                b.book.complete = book.book.complete ? !book.book.complete : true
             }
             return b
         })
         setBooks(updatedList)
-        console.log(books)
     }
 
     return (
@@ -88,7 +67,7 @@ function HomePage() {
                             >
                                 {books.map((book, index) => {
                                     return (
-                                        <SortableListItem book={book} index={index} handleCheck={() => completeBook(book)} key={book.id} />
+                                        <SortableListItem book={book.book} index={index.position} handleCheck={() => completeBook(book)} key={book.id} />
                                     )
                                 })}
                             </DragDropProvider>

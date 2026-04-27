@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router"
-import { getBookInfo, searchBooks } from "../utils/books";
+import { searchBooks } from "../utils/books";
 
 function SearchPage() {
     const [searchParams, setSearchParams] = useSearchParams();

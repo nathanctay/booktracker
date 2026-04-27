@@ -1,6 +1,6 @@
 export async function getBookInfo(bookId: string) {
     try {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/book/${bookId}`)
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/book-info/${bookId}`)
         if (!response.ok) {
             throw new Error(`Response status: ${response.status}`);
         }
