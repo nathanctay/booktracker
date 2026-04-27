@@ -83,7 +83,19 @@ app.openapi(bookInfoRoute, async (c) => {
     try {
         const result = await getBookInfo(bookId)
 
-        return c.json(result, 200)
+        const bookInfo = await db.query.books.findMany({
+            where: eq(books.hardcoverId, bookId),
+            with: {
+                listItems: {
+                    with: { list: true }
+                }
+            }
+        })
+
+        return c.json({
+            hardcover: { ...result },
+            saved: { ...bookInfo }
+        }, 200)
     } catch (e) {
         if (e instanceof HardcoverError) {
             return c.json({ error: e.message }, 502)

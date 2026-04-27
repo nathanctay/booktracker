@@ -24,6 +24,7 @@ export async function getBookInfo(bookId: number) {
                 contribution
                 contributable_type
             }
+            description
             headline
             image {
                 url

@@ -15,28 +15,62 @@ const BookInfoParams = z.object({
 })
 
 const BookInfoSchema = z.object({
-    book_series: z.array(z.object({
-        position: z.number(),
-        series: z.object({
-            books_count: z.number(),
+    hardcover: z.object({
+        book_series: z.array(z.object({
+            position: z.number(),
+            series: z.object({
+                books_count: z.number(),
+                id: z.number(),
+                name: z.string()
+            })
+        })),
+        contributions: z.array(z.object({
+            author: z.object({
+                name: z.string()
+            }),
+            contribution: z.string().nullable(),
+            contributable_type: z.enum(["Book", "Edition"])
+        })),
+        description: z.string().nullable(),
+        headline: z.string().nullable(),
+        image: z.object({
+            url: z.url()
+        }).nullable(),
+        pages: z.number().nullable(),
+        release_year: z.number().nullable(),
+        title: z.string()
+    }),
+    saved: z.array(
+        z.object({
+            title: z.string(),
             id: z.number(),
-            name: z.string()
+            author: z.string(),
+            hardcoverId: z.number(),
+            pageCount: z.number(),
+            coverUrl: z.url(),
+            progress: z.number().nullable(),
+            complete: z.boolean().nullable(),
+            dateStarted: z.string().nullable(),
+            dateFinished: z.string().nullable(),
+            lastRead: z.string().nullable(),
+            listItems: z.array(
+                z.object({
+                    id: z.number(),
+                    position: z.number().nullable(),
+                    bookId: z.number().nullable(),
+                    listId: z.number().nullable(),
+                    addedAt: z.string().nullable(),
+                    list:
+                        z.object({
+                            description: z.string().nullable(),
+                            name: z.string(),
+                            id: z.number(),
+                            createdAt: z.string().nullable(),
+                        }).nullable()
+                })
+            )
         })
-    })),
-    contributions: z.array(z.object({
-        author: z.object({
-            name: z.string()
-        }),
-        contribution: z.string().nullable(),
-        contributable_type: z.enum(["Book", "Edition"])
-    })),
-    headline: z.string().nullable(),
-    image: z.object({
-        url: z.url()
-    }).nullable(),
-    pages: z.number().nullable(),
-    release_year: z.number().nullable(),
-    title: z.string()
+    ).nullable()
 })
 
 export const bookInfoRoute = createRoute({
