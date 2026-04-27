@@ -8,14 +8,12 @@ function SearchPage() {
     const [books, setBooks] = useState([])
 
     useEffect(() => {
-        console.log(books)
     }, [books])
 
     useEffect(() => {
         const debounceTimer = setTimeout(() => {
             setSearchParams(`?q=${search}`)
         }, 500)
-        console.log(search)
         return () => clearTimeout(debounceTimer)
     }, [search])
 

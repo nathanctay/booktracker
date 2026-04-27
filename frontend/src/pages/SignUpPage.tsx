@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { signUp } from "../utils/auth-client";
 import { useNavigate } from "react-router";
-import { FieldApi, useForm, type FieldComponent } from '@tanstack/react-form'
+import { useForm } from '@tanstack/react-form'
 import z from "zod";
 
 export default function SignUpPage() {

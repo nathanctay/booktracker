@@ -2,28 +2,45 @@ import { useEffect, useState } from "react"
 import { useParams } from "react-router"
 import { getBookInfo } from "../utils/books"
 import type { BookInfoResponse } from "../types/BookInfoResponse"
+import { addToList } from "../utils/lists"
+import type { ListItemList } from "../types/ListItem"
 
 function BookInfoPage() {
     const params = useParams()
     const bookId = params.id
     const [bookInfo, setBookInfo] = useState<BookInfoResponse>()
+    const [lists, setLists] = useState<ListItemList[]>([])
     const [exists, setExists] = useState(false)
     const [loading, setLoading] = useState(true)
+
+    async function addToDefaultList() {
+        await addToList({ hardcoverId: parseInt(bookId) })
+    }
 
     useEffect(() => {
         async function getInfo() {
             setLoading(true)
+
             if (bookId) {
                 const results = await getBookInfo(bookId)
                 setBookInfo(results)
-                console.log(results)
-                if (results.saved.length > 0) setExists(true)
-                console.log(exists)
+                if (results.saved && results.saved.length > 0) setExists(true)
             }
+
+            if (exists) {
+                const lists: ListItemList[] = []
+                bookInfo.saved.map((book) => {
+                    book.listItems.forEach(listItem => {
+                        lists.push(listItem as ListItemList)
+                    })
+                })
+                setLists(lists)
+            }
+
             setLoading(false)
         }
-
         getInfo()
+
     }, [params])
 
     return (!loading && (
@@ -34,7 +51,11 @@ function BookInfoPage() {
                 </div>
                 <div className="bookinfo info-head">
                     <h1 className="text-2xl md:text-3xl lg:text-5xl my-4">{exists ? bookInfo.saved[0].title : bookInfo.hardcover.title}</h1>
-                    <p>by {exists ? bookInfo.saved[0].author : bookInfo.hardcover.contributions[0].author.name}</p>
+                    <p>by {exists ? bookInfo.saved[0].author.map((author, index) => (
+                        <span key={author.name}>{index > 0 && '&'} {author.name}</span>
+                    )) : bookInfo.hardcover.contributions.map((author, index) => (
+                        <span>{index > 0 && ' &'} {author.author.name}</span>
+                    ))}</p>
                     <p className="hidden md:block text-md text-gray-500 italic">{bookInfo.hardcover.headline}</p>
                 </div>
                 <div className="info-main">
@@ -66,19 +87,23 @@ function BookInfoPage() {
                     <p className="md:hidden text-md text-gray-500 italic mb-4">{bookInfo.hardcover.headline}</p>
                     <p>{bookInfo.hardcover.description}</p>
                 </div>
-                <div className="info-lists">
-                    <button>Add to List</button>
-                    {exists && bookInfo.saved[0].listItems.map((listItem) => {
-                        return (
-                            <>
-                                <p>{listItem.list?.name == 'default' ? "To Read" : listItem.list?.name}</p>
-                                <p>{listItem.position}</p>
-                            </>
+                <div className="info-lists flex flex-col gap-4">
+                    <button className="shadow px-1 py-2 rounded-md bg-[var(--primary)] text-white" onClick={() => addToDefaultList()} >
+                        Add to List
+                    </button>
+                    {lists.map((listItem) => {
+                        if (listItem.list?.name != 'default') {
+                            return (
+                                <div key={listItem.id} className="bg-gray-100 shadow rounded-md px-2 py-2 flex flex-col gap-2 ">
+                                    <p className="self-center">{listItem.list?.name}</p>
+                                    <p className="small"># {listItem.position}</p>
+                                </div>
 
-                        )
+                            )
+                        }
                     })}
                 </div>
-            </div>
+            </div >
 
         </>
     ))

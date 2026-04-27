@@ -13,13 +13,11 @@ export async function getBookInfo(bookId: string) {
 
 export async function searchBooks(searchQuery: string) {
     try {
-        console.log(import.meta.env.VITE_BACKEND_URL)
         const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/book-search/${searchQuery}`)
         if (!response.ok) {
             throw new Error(`Response status: ${response.status}`);
         }
         const results = await response.json()
-        console.log(results)
         return results
     } catch (err) {
         console.error(err.message)

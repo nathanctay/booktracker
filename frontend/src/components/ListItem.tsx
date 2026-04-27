@@ -21,7 +21,9 @@ export const ListItem = forwardRef<HTMLLIElement, ListItemProps>(
                             </div>
                         )}
                     <div className="flex-4">
-                        <span className='font-bold'>{book.title}</span> <span className='text-sm'>{book.author && `by ${book.author}`}</span>
+                        <a href={`/book/${book.hardcoverId}`}><span className='font-bold'>{book.title}</span></a> <span className='text-sm'>by {book.author && book.author.map((author, index) => (
+                            <span>{index > 0 && '&'} {author.name}</span>
+                        ))}</span>
                     </div>
                     <div className='flex-1'>{book.progress ? book.progress : 0}/{book.pageCount} <span className='small'>pages</span></div>
                     <div className="w-[1.5rem] justify-center items-center text-center"><Checkbox checked={book.complete} onChange={() => handleCheck()} /></div>
@@ -39,7 +41,6 @@ interface SortableListItemProps {
 
 export function SortableListItem({ book, index, handleCheck }: SortableListItemProps) {
     const { ref, handleRef } = useSortable({ id: book.id, index })
-
     return (
         <ListItem
             ref={ref}

@@ -11,10 +11,10 @@ export type BookInfoResponse = {
         contributions: {
             author: {
                 name: string
-            }[],
+            },
             contribution?: string,
             contributable_type: "Book" | "Edition"
-        },
+        }[],
         description?: string,
         headline?: string,
         image?: {
@@ -29,7 +29,9 @@ export type BookInfoResponse = {
         hardcoverId: number;
         title: string;
         pageCount: number;
-        author: string;
+        author: {
+            name: string
+        }[];
         coverUrl: string;
         progress?: number;
         complete?: boolean;

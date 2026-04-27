@@ -1,9 +1,8 @@
-import { Navigate, NavLink, Outlet, useNavigate } from "react-router"
+import { Navigate, Outlet } from "react-router"
 import { useSession } from "../utils/auth-client"
 
 function PublicLayout() {
     const { data: session, isPending } = useSession()
-    console.log(session)
     // Show loading spinner
     // if (isPending) return <Spinner />
     if (!isPending && session) return <Navigate to={'/home'} replace />

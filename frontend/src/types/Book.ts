@@ -3,7 +3,9 @@ export interface Book {
     hardcoverId: number;
     title: string;
     pageCount: number;
-    author: string;
+    author: {
+        name: string
+    }[];
     coverUrl: string;
     progress?: number;
     complete?: boolean;

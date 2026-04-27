@@ -1,26 +1,24 @@
 import { DragDropProvider } from '@dnd-kit/react';
-import { useSortable, isSortable } from '@dnd-kit/react/sortable';
-import { move } from '@dnd-kit/helpers';
-import type { Book } from '../types/Book';
+import { isSortable } from '@dnd-kit/react/sortable';
 import { useEffect, useState } from 'react';
 import { SortableListItem } from '../components/ListItem';
+import type { ListItemBook } from '../types/ListItem';
 
 function HomePage() {
-    const [books, setBooks] = useState<Book[]>([]);
+    const [books, setBooks] = useState<ListItemBook[]>([]);
 
     useEffect(() => {
         async function getList() {
             const result = await fetch(`${import.meta.env.VITE_BACKEND_URL}/list`, { credentials: 'include' })
             const list = await result.json()
-            console.log(list)
             setBooks(list.listItems)
         }
         getList()
     }, [])
 
-    function completeBook(book: Book) {
-        let updatedList = books!.map(b => {
-            if (b.id == book.id) {
+    function completeBook(book: ListItemBook) {
+        const updatedList = books!.map(b => {
+            if (b.book.id == book.book.id) {
                 b.book.complete = book.book.complete ? !book.book.complete : true
             }
             return b
@@ -49,7 +47,6 @@ function HomePage() {
                                     if (event.canceled) return;
 
                                     const { source } = event.operation;
-                                    console.log(source)
 
                                     if (isSortable(source)) {
                                         const { initialIndex, index } = source
@@ -67,7 +64,7 @@ function HomePage() {
                             >
                                 {books.map((book, index) => {
                                     return (
-                                        <SortableListItem book={book.book} index={index.position} handleCheck={() => completeBook(book)} key={book.id} />
+                                        <SortableListItem book={book.book} index={index} handleCheck={() => completeBook(book)} key={book.book.id} />
                                     )
                                 })}
                             </DragDropProvider>
