@@ -42,7 +42,7 @@ function SearchPage() {
             {
                 books && books.length > 0 && (
                     <ul className="flex flex-col gap-2 mt-4">
-                        {books.map((book, index) => {
+                        {books.map((book) => {
                             return (
                                 <Link to={`/book/${book.id}`}>
                                     <li onClick={() => console.log(book)}>
