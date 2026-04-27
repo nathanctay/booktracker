@@ -26,6 +26,20 @@
     // Some stricter flags (disabled by default)
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noPropertyAccessFromIndexSignature": false
+    "noPropertyAccessFromIndexSignature": false,
+    "paths": {
+      "@db/*": [
+        "./src/db/*"
+      ],
+      "@middleware/*": [
+        "./src/middleware/*"
+      ],
+      "@routes/*": [
+        "./src/routes/*"
+      ],
+      "@utils/*": [
+        "./src/utils/*"
+      ],
+    }
   }
 }

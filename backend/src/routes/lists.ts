@@ -1,6 +1,6 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import { ErrorSchema, UpstreamErrorSchema } from "./schemas";
-import { authMiddleware } from "../middleware/auth";
+import { authMiddleware } from "@middleware/auth";
 
 const ListIdParams = z.object({
     id: z

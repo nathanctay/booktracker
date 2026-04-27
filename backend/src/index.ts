@@ -1,17 +1,16 @@
 import { OpenAPIHono, z } from '@hono/zod-openapi';
 import { cors } from 'hono/cors'
-import { getBookInfo, getBooks, getSeries, HardcoverError } from "./utils/books";
-import { bookInfoRoute } from './routes/bookInfo';
-import { seriesInfoRoute } from './routes/seriesInfo';
-import { bookSearchRoute } from './routes/bookSearch';
-import { createBookRoute, deleteBookRoute, getBookRoute, getBooksRoute, updateBookRoute } from './routes/books';
+import { getBookInfo, getBooks, getSeries, HardcoverError } from "@utils/books";
+import { bookInfoRoute } from '@routes/bookInfo';
+import { seriesInfoRoute } from '@routes/seriesInfo';
+import { bookSearchRoute } from '@routes/bookSearch';
+import { createBookRoute, deleteBookRoute, getBookRoute, getBooksRoute, updateBookRoute } from '@routes/books';
 import { db } from './db';
-import { books, listItems, lists, user } from './db/schema';
+import { books, listItems, lists, user } from '@db/schema';
 import { eq, sql } from 'drizzle-orm';
-import { createListRoute, deleteListRoute, getDefaultListRoute, getListRoute, getListsRoute, updateListRoute } from './routes/lists';
-import { createListItemRoute, deleteListItemRoute, getListItemRoute, updateListItemRoute } from './routes/listItems';
-import { auth } from './utils/auth';
-import { authMiddleware } from './middleware/auth';
+import { createListRoute, deleteListRoute, getDefaultListRoute, getListRoute, getListsRoute, updateListRoute } from '@routes/lists';
+import { createListItemRoute, deleteListItemRoute, getListItemRoute, updateListItemRoute } from '@routes/listItems';
+import { auth } from '@utils/auth';
 
 type Variables = {
     user: typeof auth.$Infer.Session.user
