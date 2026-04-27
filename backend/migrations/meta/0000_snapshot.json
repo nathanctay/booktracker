@@ -1,5 +1,5 @@
 {
-  "id": "87120e7b-cd91-4b2b-bf51-7696bd6ee0d4",
+  "id": "971e1e9e-7659-4144-8a9b-037e169e2143",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -173,7 +173,7 @@
         },
         "author": {
           "name": "author",
-          "type": "text",
+          "type": "json",
           "primaryKey": false,
           "notNull": true
         },
