@@ -20,7 +20,7 @@ CREATE TABLE "books" (
 	"hardcover_id" integer NOT NULL,
 	"title" text NOT NULL,
 	"page_count" integer NOT NULL,
-	"author" json NOT NULL,
+	"author" jsonb NOT NULL,
 	"cover_url" text NOT NULL,
 	"progress" integer DEFAULT 0,
 	"complete" boolean DEFAULT false,

@@ -7,8 +7,8 @@ import { bookSearchRoute } from '@routes/bookSearch';
 import { createBookRoute, deleteBookRoute, getBookRoute, getBooksRoute, updateBookRoute } from '@routes/books';
 import { db } from './db';
 import { books, listItems, lists, user } from '@db/schema';
-import { eq, sql } from 'drizzle-orm';
-import { createListRoute, deleteListRoute, getDefaultListRoute, getListRoute, getListsRoute, updateListRoute } from '@routes/lists';
+import { eq, sql, asc, desc } from 'drizzle-orm';
+import { createListRoute, deleteListRoute, getDefaultListRoute, getListRoute, getListsRoute, reorderListRoute, updateListRoute } from '@routes/lists';
 import { createListItemRoute, deleteListItemRoute, getListItemRoute, updateListItemRoute } from '@routes/listItems';
 import { auth } from '@utils/auth';
 
@@ -182,8 +182,12 @@ app.openapi(createBookRoute, async (c) => {
     const user = c.get('user')
     try {
         const bookInfo = await getBookInfo(body.hardcoverId)
-        const author = bookInfo.contributions.map((con) => {
-            return con.author
+        const filterAuthor = bookInfo.contributions.filter((con) => {
+            return (con.contribution?.toLowerCase() == 'author' || con.contribution == null)
+        })
+        const author = filterAuthor.map((con) => {
+            return { name: con.author.name }
+
         })
         const result = await db
             .insert(books)
@@ -243,7 +247,8 @@ app.openapi(getListRoute, async (c) => {
             where: eq(lists.id, listId),
             with: {
                 listItems: {
-                    with: { book: true }
+                    orderBy: [asc(listItems.position)],
+                    with: { book: true },
                 }
             }
         })
@@ -263,6 +268,7 @@ app.openapi(getListsRoute, async (c) => {
         const listInfo = await db.query.lists.findMany({
             with: {
                 listItems: {
+                    orderBy: [asc(listItems.position)],
                     with: { book: true }
                 }
             }
@@ -282,6 +288,7 @@ app.openapi(getDefaultListRoute, async (c) => {
             where: eq(lists.isDefault, true),
             with: {
                 listItems: {
+                    orderBy: [asc(listItems.position)],
                     with: { book: true }
                 }
             }
@@ -296,6 +303,7 @@ app.openapi(getDefaultListRoute, async (c) => {
                 where: eq(lists.isDefault, true),
                 with: {
                     listItems: {
+                        orderBy: [asc(listItems.position)],
                         with: { book: true }
                     }
                 }
@@ -342,6 +350,24 @@ app.openapi(updateListRoute, async (c) => {
         return c.json({ error: 'Internal server error' }, 500)
     }
 })
+
+app.openapi(reorderListRoute, async (c) => {
+    const body = c.req.valid('json')
+    try {
+        await db.transaction(async (tx) => {
+            for (const item of body) {
+                await tx
+                    .update(listItems)
+                    .set({ position: body.indexOf(item) })
+                    .where(eq(listItems.id, item.id))
+            }
+        })
+        return c.json({ success: true }, 200)
+    } catch (e) {
+        return c.json({ error: 'Internal server error' }, 500)
+    }
+})
+
 
 app.openapi(deleteListRoute, async (c) => {
     const { id: listId } = c.req.valid('param')
@@ -421,7 +447,6 @@ app.openapi(getListItemRoute, async (c) => {
 app.openapi(updateListItemRoute, async (c) => {
     const { id: listItemId } = c.req.valid('param')
     const body = c.req.valid('json')
-
     try {
         const listItemInfo = await db
             .update(listItems)

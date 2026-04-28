@@ -45,7 +45,37 @@ const CreateBookDto = z.object({
     //     }),
 })
 
-const UpdateBookDto = CreateBookDto.partial()
+const UpdateBookDto = z.object({
+    hardcoverId: z
+        .coerce
+        .number()
+        .openapi({
+            example: 1234,
+        }),
+    title: z
+        .string()
+        .openapi({
+            example: "The Lord of the Rings"
+        }),
+    pageCount: z
+        .coerce
+        .number()
+        .openapi({
+            example: 700,
+        }),
+    author: z
+        .string()
+        .openapi({
+            example: "Frank Herbert"
+        }),
+    coverUrl: z
+        .url()
+        .openapi({
+            example: "https://assets.hardcover.app/editions/abc123.jpg"
+        }),
+    progress: z.number().nullable(),
+    complete: z.boolean().nullable(),
+}).partial()
 
 const GetBookSchema = z.object({
     title: z.string(),

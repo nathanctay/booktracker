@@ -29,6 +29,21 @@ const CreateListDto = z.object({
         }),
 })
 
+const ReorderListDto = z.array(z.object({
+    id: z
+        .coerce
+        .number()
+        .openapi({
+            example: 1234,
+        }),
+    position: z
+        .coerce
+        .number()
+        .openapi({
+            example: 1,
+        }),
+}))
+
 const UpdateListDto = CreateListDto.partial()
 
 const GetListSchema = z.object({
@@ -228,6 +243,45 @@ export const createListRoute = createRoute({
                 },
             },
             description: 'Create a list in the database',
+        }, 400: {
+            content: {
+                'application/json': {
+                    schema: ErrorSchema,
+                },
+            },
+            description: 'Returns an error',
+        }, 500: {
+            content: {
+                'application/json': {
+                    schema: UpstreamErrorSchema,
+                },
+            },
+            description: 'Internal server error',
+        }
+    },
+})
+
+export const reorderListRoute = createRoute({
+    method: 'patch',
+    path: '/reorder-list',
+    middleware: authMiddleware,
+    request: {
+        body: {
+            content: {
+                'application/json': {
+                    schema: ReorderListDto
+                }
+            }
+        }
+    },
+    responses: {
+        200: {
+            content: {
+                'application/json': {
+                    schema: z.object({ success: z.boolean() }),
+                },
+            },
+            description: 'Reorder a list in the database',
         }, 400: {
             content: {
                 'application/json': {

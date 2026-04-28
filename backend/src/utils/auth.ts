@@ -46,6 +46,12 @@ export const auth = betterAuth({
             secure: true,
         }
     },
+    session: {
+        cookieCache: {
+            enabled: true,
+            maxAge: 5 * 60 // Cache duration in seconds (5 minutes)
+        }
+    }
 });
 
 export type AuthType = {

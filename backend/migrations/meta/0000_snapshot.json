@@ -173,7 +173,7 @@
         },
         "author": {
           "name": "author",
-          "type": "json",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": true
         },
