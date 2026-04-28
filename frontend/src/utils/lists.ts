@@ -1,3 +1,5 @@
+import type { ListItemBook } from "../types/ListItem"
+
 interface addToListParams { bookId?: number, listId?: number, position?: number, hardcoverId?: number }
 
 export async function addToList({ bookId, listId, position, hardcoverId }: addToListParams) {
@@ -23,4 +25,20 @@ export async function addToList({ bookId, listId, position, hardcoverId }: addTo
     const result = await response.json()
     return result
 
+}
+
+export async function rearrangeList(newBooks: ListItemBook[]) {
+    try {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/reorder-list`, {
+            method: 'PATCH',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newBooks)
+        })
+        const results = await response.json()
+
+        return results
+    } catch (err) {
+        console.error(err.message)
+    }
 }

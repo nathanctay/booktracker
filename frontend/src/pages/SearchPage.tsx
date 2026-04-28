@@ -45,7 +45,7 @@ function SearchPage() {
                         {books.map((book) => {
                             return (
                                 <Link to={`/book/${book.id}`}>
-                                    <li onClick={() => console.log(book)}>
+                                    <li>
                                         <div className="flex border rounded-md pl-2 pr-4 py-2 gap-2">
                                             <div>
                                                 <img loading="lazy" width={20} src={book.coverUrl} alt={`${book.title} cover`} />

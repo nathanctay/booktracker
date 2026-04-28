@@ -12,6 +12,7 @@ export const { signIn, signUp, useSession, signOut, requestPasswordReset, resetP
                 }
             }
         }),
-        usernameClient()
+        usernameClient(),
+        
     ]
 })

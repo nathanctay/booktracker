@@ -4,6 +4,7 @@ import { getBookInfo } from "../utils/books"
 import type { BookInfoResponse } from "../types/BookInfoResponse"
 import { addToList } from "../utils/lists"
 import type { ListItemList } from "../types/ListItem"
+import AddToListButton from "../components/AddToListButton"
 
 function BookInfoPage() {
     const params = useParams()
@@ -52,7 +53,7 @@ function BookInfoPage() {
                 <div className="bookinfo info-head">
                     <h1 className="text-2xl md:text-3xl lg:text-5xl my-4">{exists ? bookInfo.saved[0].title : bookInfo.hardcover.title}</h1>
                     <p>by {exists ? bookInfo.saved[0].author.map((author, index) => (
-                        <span key={author.name}>{index > 0 && '&'} {author.name}</span>
+                        <span key={author.name}>{index > 0 && ' &'} {author.name}</span>
                     )) : bookInfo.hardcover.contributions.map((author, index) => (
                         <span>{index > 0 && ' &'} {author.author.name}</span>
                     ))}</p>
@@ -88,9 +89,7 @@ function BookInfoPage() {
                     <p>{bookInfo.hardcover.description}</p>
                 </div>
                 <div className="info-lists flex flex-col gap-4">
-                    <button className="shadow px-1 py-2 rounded-md bg-[var(--primary)] text-white" onClick={() => addToDefaultList()} >
-                        Add to List
-                    </button>
+                    <AddToListButton addToList={addToDefaultList} />
                     {lists.map((listItem) => {
                         if (listItem.list?.name != 'default') {
                             return (

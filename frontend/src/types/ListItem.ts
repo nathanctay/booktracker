@@ -1,6 +1,6 @@
 export type ListItemBook = {
     book: {
-        id: number | string;
+        id: number;
         hardcoverId: number;
         title: string;
         pageCount: number;
@@ -14,6 +14,8 @@ export type ListItemBook = {
         date_finished?: Date;
     }
     position: number;
+    listId: number;
+    id: number;
 }
 
 export type ListItemList = {

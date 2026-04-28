@@ -353,13 +353,15 @@ app.openapi(updateListRoute, async (c) => {
 
 app.openapi(reorderListRoute, async (c) => {
     const body = c.req.valid('json')
+    console.log(body)
     try {
         await db.transaction(async (tx) => {
-            for (const item of body) {
+            for (const [index, item] of body.entries()) {
                 await tx
                     .update(listItems)
-                    .set({ position: body.indexOf(item) })
+                    .set({ position: index })
                     .where(eq(listItems.id, item.id))
+                console.log(item, index)
             }
         })
         return c.json({ success: true }, 200)
