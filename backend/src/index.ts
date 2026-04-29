@@ -199,6 +199,8 @@ app.openapi(createBookRoute, async (c) => {
     }
 })
 
+// date_started, last_read, and date_finished are managed by DB triggers
+// based on changes to progress and complete columns  
 app.openapi(updateBookRoute, async (c) => {
     const { id: bookId } = c.req.valid('param')
     const body = c.req.valid('json')
@@ -353,7 +355,7 @@ app.openapi(updateListRoute, async (c) => {
 
 app.openapi(reorderListRoute, async (c) => {
     const body = c.req.valid('json')
-    console.log(body)
+
     try {
         await db.transaction(async (tx) => {
             for (const [index, item] of body.entries()) {
@@ -361,7 +363,6 @@ app.openapi(reorderListRoute, async (c) => {
                     .update(listItems)
                     .set({ position: index })
                     .where(eq(listItems.id, item.id))
-                console.log(item, index)
             }
         })
         return c.json({ success: true }, 200)

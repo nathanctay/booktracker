@@ -50,6 +50,14 @@ bunx drizzle-kit generate
 bunx drizzle-kit migrate
 ```
 
+5. Run the database triggers:
+
+Connect to your database as the superuser and run the trigger migration found in `migrations/`. These triggers automatically manage the following columns on the `books` table — do not pass these fields in API requests as they are set by the database:
+
+- `date_started` — set to the current date when `progress` changes from `0` to above `0`
+- `last_read` — updated to the current date whenever `progress` changes
+- `date_finished` — set to the current date when `complete` is set to `true`, cleared to `null` when set back to `false`
+
 ## Running
 
 Development (with hot reload):
