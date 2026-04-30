@@ -40,9 +40,10 @@ interface SortableListItemProps {
     book: Book;
     index: number;
     handleCheck: () => void;
+    complete: boolean
 }
 
-export function SortableListItem({ book, index, handleCheck }: SortableListItemProps) {
+export function SortableListItem({ book, index, handleCheck, complete = false }: SortableListItemProps) {
     const { ref, handleRef } = useSortable({ id: book.id, index })
     return (
         <ListItem
@@ -50,6 +51,7 @@ export function SortableListItem({ book, index, handleCheck }: SortableListItemP
             book={book}
             handleCheck={handleCheck}
             handleRef={handleRef}
+            complete={complete}
         />
     )
 
