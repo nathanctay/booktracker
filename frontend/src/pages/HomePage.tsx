@@ -1,7 +1,7 @@
 import { DragDropProvider } from '@dnd-kit/react';
 import { isSortable } from '@dnd-kit/react/sortable';
 import { useEffect, useRef, useState } from 'react';
-import { CompleteListItem, SortableListItem } from '../components/ListItem';
+import { ListItem, SortableListItem } from '../components/ListItem';
 import type { ListItemBook } from '../types/ListItem';
 import { markBookComplete } from '../utils/books';
 import { rearrangeList } from '../utils/lists';
@@ -127,7 +127,7 @@ function HomePage() {
                             <ul className='flex flex-col gap-2'>
                                 {completeBooks.map((book) => {
                                     return (
-                                        <CompleteListItem book={book.book} handleCheck={() => completeBook(book)} key={book.book.id} />
+                                        <ListItem book={book.book} handleCheck={() => completeBook(book)} key={book.book.id} complete />
                                     )
                                 })}
                             </ul>

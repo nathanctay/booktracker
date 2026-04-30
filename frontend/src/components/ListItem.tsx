@@ -6,11 +6,12 @@ import { forwardRef } from "react";
 interface ListItemProps {
     book: Book;
     handleCheck: () => void;
-    handleRef?: React.Ref<HTMLDivElement>
+    handleRef?: React.Ref<HTMLDivElement>;
+    complete: boolean;
 }
 
 export const ListItem = forwardRef<HTMLLIElement, ListItemProps>(
-    ({ book, handleCheck, handleRef }, ref) => {
+    ({ book, handleCheck, handleRef, complete = false }, ref) => {
         return (
             <li ref={ref}>
                 <div className="flex border rounded-md pl-2 pr-4 py-2 gap-2">
@@ -25,24 +26,9 @@ export const ListItem = forwardRef<HTMLLIElement, ListItemProps>(
                             <span>{index > 0 && ' &'} {author.name}</span>
                         ))}</span>
                     </div>
-                    <div className='flex-1'>{book.progress ? book.progress : 0}/{book.pageCount} <span className='small'>pages</span></div>
-                    <div className="w-[1.5rem] justify-center items-center text-center"><Checkbox checked={book.complete} onChange={() => handleCheck()} /></div>
-                </div>
-            </li >
-        )
-    }
-)
-
-export const CompleteListItem = forwardRef<HTMLLIElement, ListItemProps>(
-    ({ book, handleCheck }, ref) => {
-        return (
-            <li ref={ref}>
-                <div className="flex border rounded-md pl-2 pr-4 py-2 gap-2">
-                    <div className="flex-4">
-                        <a href={`/book/${book.hardcoverId}`}><span className='font-bold'>{book.title}</span></a> <span className='text-sm'>by {book.author && book.author.map((author, index) => (
-                            <span>{index > 0 && ' &'} {author.name}</span>
-                        ))}</span>
-                    </div>
+                    {!complete &&
+                        <div className='flex-1'>{book.progress ? book.progress : 0}/{book.pageCount} <span className='small'>pages</span></div>
+                    }
                     <div className="w-[1.5rem] justify-center items-center text-center"><Checkbox checked={book.complete} onChange={() => handleCheck()} /></div>
                 </div>
             </li >
