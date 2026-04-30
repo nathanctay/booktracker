@@ -24,10 +24,13 @@ export async function searchBooks(searchQuery: string) {
     }
 }
 
+// date_started, last_read, and date_finished are managed by DB triggers
+// based on changes to progress and complete columns  
 export async function markBookComplete(bookId: number, complete: boolean) {
     const body = {
-        complete
+        complete,
     }
+
     try {
         const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/book/${bookId}`, {
             method: 'PATCH',

@@ -36,9 +36,7 @@ function HomePage() {
             clearTimeout(completeBookTimeoutRef.current)
         }
         completeBookTimeoutRef.current = setTimeout(() => {
-            console.log(book.book)
             const nowComplete = !book.book.complete
-            console.log(nowComplete)
 
             const updatedList = books!.map(b => {
                 if (b.book.id == book.book.id) {
@@ -46,7 +44,6 @@ function HomePage() {
                 }
                 return b
             })
-            console.log(updatedList)
 
             if (nowComplete) {
                 const index = updatedList.findIndex(b => b.book.id === book.book.id)
@@ -59,10 +56,7 @@ function HomePage() {
                 const index = updatedList.findIndex(b => b.book.id === book.book.id)
                 const [item] = updatedList.splice(index, 1)
                 updatedList.splice(completeIndex, 0, item);
-                console.log(item)
             }
-
-            console.log(updatedList)
 
             setBooks(updatedList)
             markBookComplete(book.book.id, nowComplete)
