@@ -2,6 +2,7 @@ import { useSortable } from "@dnd-kit/react/sortable"
 import type { Book } from "../types/Book";
 import Checkbox from "./Checkbox";
 import { forwardRef } from "react";
+import CircularProgressBar from "./CircularProgressBar";
 
 interface ListItemProps {
     book: Book;
@@ -14,7 +15,7 @@ export const ListItem = forwardRef<HTMLLIElement, ListItemProps>(
     ({ book, handleCheck, handleRef, complete = false }, ref) => {
         return (
             <li ref={ref}>
-                <div className="flex border rounded-md pl-2 pr-4 py-2 gap-2">
+                <div className="flex border rounded-md pl-2 pr-4 py-2 gap-2 items-center">
                     {
                         handleRef && (
                             <div ref={handleRef} className='w-[1.5rem] flex place-items-center'>
@@ -27,7 +28,10 @@ export const ListItem = forwardRef<HTMLLIElement, ListItemProps>(
                         ))}</span>
                     </div>
                     {!complete &&
-                        <div className='flex-1'>{book.progress ? book.progress : 0}/{book.pageCount} <span className='small'>pages</span></div>
+                        <>
+                            <CircularProgressBar progress={book.progress / book.pageCount} />
+                            <div className='flex-1'>{book.progress ? book.progress : 0}/{book.pageCount} <span className='small'>pages</span></div>
+                        </>
                     }
                     <div className="w-[1.5rem] justify-center items-center text-center"><Checkbox checked={book.complete} onChange={() => handleCheck()} /></div>
                 </div>
